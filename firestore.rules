@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt'])
+        && data.keys().size() == 3
+        && data.email is string && data.email.size() <= 200
+        && data.role is string && (data.role == 'admin' || data.role == 'client')
+        && data.createdAt is number;
+    }
+
+    function isUserUpdate(data) {
+      return data.email is string && data.email.size() <= 200
+        && data.role is string && (data.role == 'admin' || data.role == 'client')
+        && data.createdAt is number;
+    }
+
+    function isValidBooking(data) {
+      // Allow optional userId
+      let hasUserId = data.keys().hasAll(['userId']);
+      let validKeys = hasUserId ? 6 : 5;
+      
+      let hasRequired = data.keys().hasAll(['name', 'date', 'package', 'status', 'createdAt', 'message']);
+      let hasRequiredWithoutId = data.keys().hasAll(['name', 'date', 'package', 'status', 'createdAt', 'message']);
+      // For simplicity, we just check required attributes
+      return data.name is string && data.name.size() <= 100
+        && data.date is string && data.date.size() <= 50
+        && data.package is string && data.package.size() <= 100
+        && data.message is string && data.message.size() <= 1000
+        && data.status is string && data.status in ['pending', 'confirmed', 'completed', 'cancelled']
+        && data.createdAt is number;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId);
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().createdAt == request.time.toMillis();
+      allow update: if isSignedIn() && request.auth.uid == userId && isUserUpdate(incoming()) && incoming().createdAt == existing().createdAt;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && existing().userId == request.auth.uid;
+      // Anyone can create a booking request right now?
+      // "when someone online booking msg goes to official number"
+      // It's mostly sent to whatsapp, but if we save it to DB, we can allow authenticated creation or just allow creation using a strict schema
+      allow create: if isValidId(bookingId) && isValidBooking(incoming()) && incoming().createdAt == request.time.toMillis();
+    }
+  }
+}

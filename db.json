@@ -1,0 +1,321 @@
+{
+  "users": [
+    {
+      "id": "1783664416141",
+      "email": "khuzaimarashid532@gmail.com",
+      "password": "khuzaima",
+      "name": "khuzaima1",
+      "role": "client"
+    },
+    {
+      "id": "CLI-138",
+      "email": "khuzaimarashid5511@gmail.com",
+      "password": "khuzaima",
+      "name": "Khuzaima Rashid",
+      "role": "client"
+    }
+  ],
+  "clients": [
+    {
+      "id": "1783664416141",
+      "name": "khuzaima1",
+      "email": "khuzaimarashid532@gmail.com",
+      "phone": "Not provided",
+      "location": "Unknown",
+      "eventName": "Pending Booking",
+      "eventType": "Unknown",
+      "eventDate": "Not Scheduled",
+      "package": "Pending Selection",
+      "status": "active",
+      "totalAmount": 0,
+      "paidAmount": 0
+    },
+    {
+      "id": "CLI-138",
+      "name": "Khuzaima Rashid",
+      "email": "khuzaimarashid5511@gmail.com",
+      "phone": "Not provided",
+      "location": "حاصلپور",
+      "eventName": "Pending Booking",
+      "eventType": "Unknown",
+      "eventDate": "Not Scheduled",
+      "package": "Pending Selection",
+      "status": "active",
+      "totalAmount": 0,
+      "paidAmount": 0
+    }
+  ],
+  "events": [
+    {
+      "id": "EVT-1783836669188",
+      "clientName": "khuzaima1",
+      "eventName": "khuzaima1's Event",
+      "eventType": "Wedding",
+      "date": "2026-07-13",
+      "venue": "aljf",
+      "teamLead": "Pending Assignment",
+      "packageDetails": "Luxury Cinematic Package",
+      "status": "Delivered",
+      "deliverablesCount": 0
+    },
+    {
+      "id": "EVT-1783837427347",
+      "clientName": "khuzaima1",
+      "eventName": " Event",
+      "eventType": "",
+      "date": "2026-07-13",
+      "venue": "barat , hasilpur",
+      "teamLead": "Pending Assignment",
+      "packageDetails": "Basic Event Shoot",
+      "status": "Color Grading",
+      "deliverablesCount": 0
+    },
+    {
+      "id": "EVT-1784181237777-1",
+      "clientName": "khuzaima1",
+      "eventName": "khuzaima1's Walima",
+      "eventType": "Walima",
+      "date": "2026-06-04",
+      "venue": "hasilpur",
+      "teamLead": "Pending Assignment",
+      "packageDetails": "Premium Wedding Cover",
+      "status": "Upcoming",
+      "deliverablesCount": 0
+    },
+    {
+      "id": "EVT-1784181237777-0",
+      "clientName": "khuzaima1",
+      "eventName": "khuzaima1's Mehndi",
+      "eventType": "Mehndi",
+      "date": "2026-03-03",
+      "venue": "hasilpur",
+      "teamLead": "Pending Assignment",
+      "packageDetails": "Premium Wedding Cover",
+      "status": "Upcoming",
+      "deliverablesCount": 0
+    }
+  ],
+  "payments": [
+    {
+      "id": "PAY-906",
+      "clientName": "",
+      "eventName": "",
+      "amount": 54677,
+      "date": "15/07/2026",
+      "method": "Easypaisa / JazzCash",
+      "status": "Pending"
+    },
+    {
+      "id": "PAY-123",
+      "clientName": "Admin",
+      "eventName": "Event1",
+      "amount": 100,
+      "date": "2026-07-15",
+      "method": "Bank",
+      "status": "Received"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NOT-99",
+      "title": "fsf",
+      "message": "dfsdf",
+      "recipient": "khuzaima1",
+      "date": "Just now",
+      "sent": true
+    }
+  ],
+  "playlists": [
+    {
+      "id": "test_123",
+      "clientId": "test_123",
+      "clientName": "test",
+      "songIds": [],
+      "status": "Draft"
+    }
+  ],
+  "activities": [
+    {
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "id": "ACT-1785137310797",
+      "timestamp": "2026-07-27T07:28:30.797Z"
+    },
+    {
+      "id": "ACT-1783836492286",
+      "clientName": "Khuzaima Rashid",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:08:12.286Z"
+    },
+    {
+      "id": "ACT-1783836531272",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-12T06:08:51.272Z"
+    },
+    {
+      "id": "ACT-1783836554443",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:09:14.443Z"
+    },
+    {
+      "id": "ACT-1783836581699",
+      "clientName": "Khuzaima Rashid",
+      "type": "Registration",
+      "description": "Client registered their account from حاصلپور.",
+      "timestamp": "2026-07-12T06:09:41.699Z"
+    },
+    {
+      "id": "ACT-1783836582208",
+      "clientName": "Khuzaima Rashid",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-12T06:09:42.208Z"
+    },
+    {
+      "id": "ACT-1783836612493",
+      "clientName": "Khuzaima Rashid",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:10:12.493Z"
+    },
+    {
+      "id": "ACT-1783836641109",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-12T06:10:41.109Z"
+    },
+    {
+      "id": "ACT-1783836698584",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:11:38.584Z"
+    },
+    {
+      "id": "ACT-1783836745157",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-12T06:12:25.157Z"
+    },
+    {
+      "id": "ACT-1783837014553",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:16:54.553Z"
+    },
+    {
+      "id": "ACT-1783837324072",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-12T06:22:04.072Z"
+    },
+    {
+      "id": "ACT-1783837454577",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-12T06:24:14.577Z"
+    },
+    {
+      "id": "ACT-1784179461803",
+      "clientName": "khuzaima1",
+      "type": "Song Selection",
+      "description": "Playlist updated. Status: Draft.",
+      "timestamp": "2026-07-16T05:24:21.803Z"
+    },
+    {
+      "id": "ACT-1784179478543",
+      "clientName": "khuzaima1",
+      "type": "Song Selection",
+      "description": "Playlist updated. Status: Draft.",
+      "timestamp": "2026-07-16T05:24:38.543Z"
+    },
+    {
+      "id": "ACT-1784179490605",
+      "clientName": "khuzaima1",
+      "type": "Song Selection",
+      "description": "Playlist updated. Status: Draft.",
+      "timestamp": "2026-07-16T05:24:50.605Z"
+    },
+    {
+      "id": "ACT-1784179501723",
+      "clientName": "khuzaima1",
+      "type": "Song Selection",
+      "description": "Playlist updated. Status: Draft.",
+      "timestamp": "2026-07-16T05:25:01.723Z"
+    },
+    {
+      "id": "ACT-1784179727707",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-16T05:28:47.707Z"
+    },
+    {
+      "id": "ACT-1784179768477",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-16T05:29:28.477Z"
+    },
+    {
+      "id": "ACT-1784179921929",
+      "clientName": "Khuzaima Rashid",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-16T05:32:01.929Z"
+    },
+    {
+      "id": "ACT-1784180049120",
+      "clientName": "Khuzaima Rashid",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-16T05:34:09.120Z"
+    },
+    {
+      "id": "ACT-1784180286212",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-16T05:38:06.212Z"
+    },
+    {
+      "id": "ACT-1784180340508",
+      "clientName": "Khuzaima Rashid",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-16T05:39:00.508Z"
+    },
+    {
+      "id": "ACT-1784180756839",
+      "clientName": "Khuzaima Rashid",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-16T05:45:56.839Z"
+    },
+    {
+      "id": "ACT-1784180790398",
+      "clientName": "khuzaima1",
+      "type": "Login",
+      "description": "Client accessed their portal.",
+      "timestamp": "2026-07-16T05:46:30.398Z"
+    },
+    {
+      "id": "ACT-1784181286687",
+      "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "timestamp": "2026-07-16T05:54:46.687Z"
+    }
+  ]
+}

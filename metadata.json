@@ -1,0 +1,8 @@
+{
+  "name": "MuzFrame Studio",
+  "description": "Professional photography studio website with booking, gallery, and client login.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
