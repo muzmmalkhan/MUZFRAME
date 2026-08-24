@@ -20,21 +20,16 @@ export function RootLayout() {
     );
   }
 
-  // Gatekeeping: client cannot open website until login
-  if (!user && location.pathname !== '/' && location.pathname !== '/login') {
-    return <Navigate to="/" replace />;
-  }
-
   return (
     <div className="min-h-screen flex flex-col cursor-none">
       <CustomCursor />
       <ScrollProgress />
-      {user && <Navbar />}
+      <Navbar />
       <main className="flex-1">
         <Outlet />
       </main>
-      {user && <Footer />}
-      {user && <AIChatbot />}
+      <Footer />
+      <AIChatbot />
     </div>
   );
 }
