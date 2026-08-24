@@ -47,7 +47,8 @@ let db = {
   payments: [] as any[],
   notifications: [] as any[],
   playlists: [] as any[],
-  activities: [] as any[]
+  activities: [] as any[],
+  blockedDates: [] as any[]
 };
 
 try {
@@ -62,6 +63,7 @@ try {
     db.notifications = db.notifications || [];
     db.playlists = db.playlists || [];
     db.activities = db.activities || [];
+    db.blockedDates = db.blockedDates || [];
     
     // Auto-sync missing clients from existing users (backward compatibility)
     db.users.forEach((user: any) => {
@@ -303,6 +305,22 @@ async function startServer() {
   });
 
   // Data Routes
+  app.get("/api/blocked-dates", (req, res) => res.json(db.blockedDates));
+  app.post("/api/blocked-dates", (req, res) => {
+    const { date, reason } = req.body;
+    if (!date) return res.status(400).json({ error: "Date is required" });
+    const id = `BLK-${Date.now()}`;
+    const newBlockedDate = { id, date, reason: reason || 'Admin Blocked' };
+    db.blockedDates.push(newBlockedDate);
+    saveDb();
+    res.json(newBlockedDate);
+  });
+  app.delete("/api/blocked-dates/:id", (req, res) => {
+    db.blockedDates = db.blockedDates.filter(b => b.id !== req.params.id);
+    saveDb();
+    res.json({ success: true });
+  });
+
   app.get("/api/clients", (req, res) => res.json(db.clients));
   app.post("/api/clients", async (req, res) => {
     db.clients.push(req.body);
