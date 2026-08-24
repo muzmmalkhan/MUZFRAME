@@ -22,7 +22,7 @@ export function Navbar() {
   const closeMenu = () => setIsOpen(false);
 
   const links = [
-    { name: 'Home', path: '/home' },
+    { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
     { name: 'MuzBeauty', path: '/muzbeauty' },
     { name: 'Packages', path: '/packages' },

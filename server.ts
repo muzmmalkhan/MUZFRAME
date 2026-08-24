@@ -165,8 +165,15 @@ async function startServer() {
   // Auth Routes
   app.post("/api/auth/register", async (req, res) => {
     const { email, password, name, location } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    if (!email || !password || password.length < 6) {
+      return res.status(400).json({ error: "Email and a strong password (min 6 chars) are required" });
+    }
+    if (!name || name.trim().length < 3) {
+      return res.status(400).json({ error: "A valid full name is required" });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
     }
     const existing = db.users.find(u => u.email === email);
     if (existing) {
@@ -220,12 +227,20 @@ async function startServer() {
   app.post("/api/auth/login", (req, res) => {
     const { email, password } = req.body;
     
-    // Hardcoded admin login
-    if (email === 'muz@frame' && password === 'muz@frame') {
-      return res.json({ user: { id: 'admin', email: 'muz@frame', name: 'Admin', role: 'admin' } });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = db.users.find(u => u.email === email && u.password === password);
+    // Hardcoded admin login
+    if (email === 'muz@frame') {
+      if (password === 'muz@frame') {
+        return res.json({ user: { id: 'admin', email: 'muz@frame', name: 'Admin', role: 'admin' } });
+      } else {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+    }
+
+    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -341,8 +356,8 @@ async function startServer() {
   app.post("/api/chat", async (req, res) => {
     try {
       const { message } = req.body;
-      const geminiKey = process.env.GEMINI_API_KEY || "AIzaSyCjzA6hw43G3StEUxaLx-XKSBIY0DxGSkU";
-      const openRouterKey = process.env.OPENROUTER_API_KEY || "";
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
       
       let responseText = "";
 

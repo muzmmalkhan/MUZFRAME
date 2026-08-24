@@ -1,7 +1,8 @@
 import React from 'react';
 import { Check, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 
 const PRICING = [
   {
@@ -39,6 +40,17 @@ const PRICING = [
 ];
 
 export function Packages() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleBook = () => {
+    if (user) {
+      navigate('/contact');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="pt-32 pb-24 min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -82,8 +94,8 @@ export function Packages() {
                   </div>
                 ))}
               </div>
-              <Link 
-                to="/contact" 
+              <button 
+                onClick={handleBook}
                 className={`w-full py-4 text-center rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${
                   plan.isPopular 
                   ? 'bg-[#f2a900] text-black hover:bg-white' 
@@ -91,7 +103,7 @@ export function Packages() {
                 }`}
               >
                 Book This Package
-              </Link>
+              </button>
             </div>
           ))}
         </div>

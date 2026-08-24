@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play, Camera, Star, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=3000&auto=format&fit=crop', // Stunning Drone view
@@ -12,6 +13,16 @@ const HERO_IMAGES = [
 
 export function Home() {
   const [currentBg, setCurrentBg] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleBookNow = () => {
+    if (user) {
+      navigate('/contact');
+    } else {
+      navigate('/login');
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -69,12 +80,12 @@ export function Home() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
-            <Link 
-              to="/contact" 
+            <button 
+              onClick={handleBookNow}
               className="bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)]"
             >
               Book Now <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
             <Link 
               to="/gallery" 
               className="nav-pill px-8 py-4 bg-black/50 backdrop-blur-md flex items-center gap-2 hover:border-[#f2a900] hover:text-[#f2a900]"

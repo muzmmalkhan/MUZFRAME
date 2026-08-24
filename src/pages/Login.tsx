@@ -55,9 +55,29 @@ export function Login() {
       return;
     }
 
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
+    if (viewMode === 'signup') {
+      if (!name || name.trim().length < 3) {
+        setError('Please enter a valid full name (at least 3 characters)');
+        return;
+      }
+      if (!clientLocation || clientLocation.trim().length < 2) {
+        setError('Please enter your city or location');
+        return;
+      }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address');
+        return;
+      }
+    } else {
+      if (!email || !password) {
+        setError('Please enter both email and password');
+        return;
+      }
     }
 
     setIsLoading(true);

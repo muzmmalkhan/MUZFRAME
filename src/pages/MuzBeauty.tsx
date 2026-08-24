@@ -1,8 +1,20 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export function MuzBeauty() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleJoin = () => {
+    if (user) {
+      navigate('/contact');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black pt-28 pb-20 px-6">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
@@ -28,10 +40,10 @@ export function MuzBeauty() {
           </p>
           
           <div className="pt-4 flex items-center gap-6">
-            <Link to="/contact" className="btn-primary flex items-center gap-2 group">
+            <button onClick={handleJoin} className="btn-primary flex items-center gap-2 group">
               Join Waitlist
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </button>
           </div>
         </motion.div>
 
