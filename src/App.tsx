@@ -12,7 +12,6 @@ import { ClientDashboard } from './pages/ClientDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { MuzBeauty } from './pages/MuzBeauty';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ComingSoon } from './pages/ComingSoon';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -33,13 +32,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  // Check if current date is before August 28, 2026
-  const isComingSoon = new Date() < new Date('2026-08-28T00:00:00');
-
-  if (isComingSoon) {
-    return <ComingSoon />;
-  }
-
   return (
     <AuthProvider>
       <BrowserRouter>
