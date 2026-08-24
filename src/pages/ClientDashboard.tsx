@@ -46,6 +46,7 @@ export function ClientDashboard() {
   const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingErrors, setBookingErrors] = useState<Record<string, string>>({});
+  const [blockedDates, setBlockedDates] = useState<any[]>([]);
   
   const [bookingEvents, setBookingEvents] = useState<{
     type: string;
@@ -71,11 +72,26 @@ export function ClientDashboard() {
     setBookingEvents(newEvents);
   };
 
+  
   const handleBookingEventChange = (index: number, field: string, value: string) => {
+    if (field === 'date') {
+      const isBlocked = blockedDates.find(b => b.date === value);
+      if (isBlocked) {
+        setBookingErrors(prev => ({ ...prev, [`date_${bookingEvents[index].type}`]: `This date is unavailable: ${isBlocked.reason}` }));
+        return;
+      } else {
+        setBookingErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`date_${bookingEvents[index].type}`];
+          return newErrors;
+        });
+      }
+    }
     const newEvents = [...bookingEvents];
     (newEvents[index] as any)[field] = value;
     setBookingEvents(newEvents);
   };
+
   const [passSuccess, setPassSuccess] = useState('');
   const [isChangingPass, setIsChangingPass] = useState(false);
 
@@ -109,12 +125,14 @@ export function ClientDashboard() {
           try { return JSON.parse(text); } catch (e) { return []; }
         });
         
-        const [clients, events, playlists, payments] = await Promise.all([
+        const [clients, events, playlists, payments, bDates] = await Promise.all([
           fetchJson('/api/clients'),
           fetchJson('/api/events'),
           fetchJson('/api/playlists'),
-          fetchJson('/api/payments')
+          fetchJson('/api/payments'),
+          fetchJson('/api/blocked-dates')
         ]);
+        setBlockedDates(bDates || []);
         const foundClient = clients.find((c: any) => c.email === user.email);
         if (foundClient) {
           setClientData(foundClient);
@@ -1131,12 +1149,19 @@ export function ClientDashboard() {
                               <div className="w-full">
                                 <div className="relative">
                                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                                  <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
-                                    type="time"
+                                  <select 
                                     value={ev.startTime}
                                     onChange={(e) => handleBookingEventChange(index, 'startTime', e.target.value)}
-                                    className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${bookingErrors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
-                                  />
+                                    className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${bookingErrors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0 appearance-none`}
+                                  >
+                                    <option value="" disabled>--:--</option>
+                                    {Array.from({ length: 24 }).map((_, i) => {
+                                      const h24 = i.toString().padStart(2, '0');
+                                      const h12 = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                                      const ampm = i < 12 ? 'AM' : 'PM';
+                                      return <option key={h24} value={`${h24}:00`}>{`${h12}:00 ${ampm}`}</option>;
+                                    })}
+                                  </select>
                                 </div>
                                 {bookingErrors[`startTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`startTime_${ev.type}`]}</span>}
                               </div>
@@ -1144,12 +1169,19 @@ export function ClientDashboard() {
                               <div className="w-full">
                                 <div className="relative">
                                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                                  <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
-                                    type="time"
+                                  <select 
                                     value={ev.endTime}
                                     onChange={(e) => handleBookingEventChange(index, 'endTime', e.target.value)}
-                                    className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${bookingErrors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
-                                  />
+                                    className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${bookingErrors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0 appearance-none`}
+                                  >
+                                    <option value="" disabled>--:--</option>
+                                    {Array.from({ length: 24 }).map((_, i) => {
+                                      const h24 = i.toString().padStart(2, '0');
+                                      const h12 = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                                      const ampm = i < 12 ? 'AM' : 'PM';
+                                      return <option key={h24} value={`${h24}:00`}>{`${h12}:00 ${ampm}`}</option>;
+                                    })}
+                                  </select>
                                 </div>
                                 {bookingErrors[`endTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`endTime_${ev.type}`]}</span>}
                               </div>

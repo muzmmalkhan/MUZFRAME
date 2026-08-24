@@ -1,102 +1,58 @@
 const fs = require('fs');
+let file = fs.readFileSync('src/pages/ClientDashboard.tsx', 'utf8');
 
-let code = fs.readFileSync('src/pages/ClientDashboard.tsx', 'utf8');
+file = file.replace(
+  'const [bookingErrors, setBookingErrors] = useState<Record<string, string>>({});',
+  `const [bookingErrors, setBookingErrors] = useState<Record<string, string>>({});\n  const [blockedDates, setBlockedDates] = useState<any[]>([]);`
+);
 
-const target = `  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPassError('');
-    setPassSuccess('');
+file = file.replace(
+  'const [clients, events, playlists, payments] = await Promise.all([',
+  `const [clients, events, playlists, payments, bDates] = await Promise.all([`
+);
 
-    if (!newPass || !confirmPass) {
-      setPassError('Please fill in new password fields');
-      return;
-    }
-    if (newPass.length < 6) {
-      setPassError('New password must be at least 6 characters long');
-      return;
-    }
-    if (newPass !== confirmPass) {
-      setPassError('New passwords do not match');
-      return;
-    }
+file = file.replace(
+  `fetchJson('/api/payments')\n        ]);`,
+  `fetchJson('/api/payments'),\n          fetchJson('/api/blocked-dates')\n        ]);\n        setBlockedDates(bDates || []);`
+);
 
-    setIsChangingPass(true);
-    try {
-      await changePassword(newPass);
-      setPassSuccess('Your portal password has been updated securely.');
-      setCurrentPass('');
-      setNewPass('');
-      setConfirmPass('');
-    } catch (err: any) {
-      setPassError(err.message || 'Failed to update password');
-    } finally {
-      setIsChangingPass(false);
+const handleBookingEventChangeCode = `
+  const handleBookingEventChange = (index: number, field: string, value: string) => {
+    if (field === 'date') {
+      const isBlocked = blockedDates.find(b => b.date === value);
+      if (isBlocked) {
+        alert(\`This date (\${value}) is unavailable: \${isBlocked.reason}\`);
+        return; // do not update state
+      }
     }
+    const newEvents = [...bookingEvents];
+    (newEvents[index] as any)[field] = value;
+    setBookingEvents(newEvents);
   };
+`;
 
-  return (`
+file = file.replace(
+  /const handleBookingEventChange = \(index: number, field: string, value: string\) => {[\s\S]*?setBookingEvents\(newEvents\);\n  };/,
+  handleBookingEventChangeCode
+);
 
-const replacement = `  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPassError('');
-    setPassSuccess('');
+const blockedDatesUI = `
+          {blockedDates.length > 0 && (
+            <div className="mb-6 bg-red-950/20 border border-red-500/20 rounded-xl p-4">
+              <h4 className="text-red-400 font-semibold text-sm mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4"/> Unavailable Dates</h4>
+              <div className="flex flex-wrap gap-2">
+                {blockedDates.map(bd => (
+                  <span key={bd.id} className="bg-red-500/10 text-red-300 text-xs px-2 py-1 rounded-md border border-red-500/20">
+                    {new Date(bd.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <span className="opacity-60 ml-1">({bd.reason})</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+`;
 
-    if (!newPass || !confirmPass) {
-      setPassError('Please fill in new password fields');
-      return;
-    }
-    if (newPass.length < 6) {
-      setPassError('New password must be at least 6 characters long');
-      return;
-    }
-    if (newPass !== confirmPass) {
-      setPassError('New passwords do not match');
-      return;
-    }
+file = file.replace('<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">', blockedDatesUI);
 
-    setIsChangingPass(true);
-    try {
-      await changePassword(newPass);
-      setPassSuccess('Your portal password has been updated securely.');
-      setCurrentPass('');
-      setNewPass('');
-      setConfirmPass('');
-    } catch (err: any) {
-      setPassError(err.message || 'Failed to update password');
-    } finally {
-      setIsChangingPass(false);
-    }
-  };
-
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-black pt-28 pb-20 px-6 flex flex-col items-center justify-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl mx-auto flex flex-col items-center"
-        >
-          <div className="w-20 h-20 bg-[#f2a900]/10 rounded-full flex items-center justify-center mb-8 border border-[#f2a900]/20">
-            <Lock className="w-10 h-10 text-[#f2a900]" />
-          </div>
-          <h1 className="font-serif text-5xl lg:text-7xl font-medium text-white leading-tight mb-6">
-            Client Portal <br />
-            <span className="text-[#f2a900] italic">Coming Soon</span>
-          </h1>
-          <p className="text-white/60 text-lg leading-relaxed mb-10">
-            Our dedicated client portal is currently under development. It will launch on August 28th, bringing you a fully immersive experience to review, manage, and download your precious moments.
-          </p>
-          <button onClick={handleLogout} className="btn-primary flex items-center gap-2">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (`
-
-code = code.replace(target, replacement);
-fs.writeFileSync('src/pages/ClientDashboard.tsx', code);
-console.log('patched');
+fs.writeFileSync('src/pages/ClientDashboard.tsx', file);

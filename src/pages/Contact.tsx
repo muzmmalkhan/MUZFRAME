@@ -29,6 +29,11 @@ export function Contact() {
   ]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [blockedDates, setBlockedDates] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/blocked-dates').then(r => r.json()).then(d => setBlockedDates(d || [])).catch(console.error);
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -38,11 +43,26 @@ export function Contact() {
     setEvents(newEvents);
   };
 
+  
   const handleEventChange = (index: number, field: string, value: string) => {
+    if (field === 'date') {
+      const isBlocked = blockedDates.find(b => b.date === value);
+      if (isBlocked) {
+        setErrors(prev => ({ ...prev, [`date_${events[index].type}`]: `This date is unavailable: ${isBlocked.reason}` }));
+        return;
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`date_${events[index].type}`];
+          return newErrors;
+        });
+      }
+    }
     const newEvents = [...events];
     (newEvents[index] as any)[field] = value;
     setEvents(newEvents);
   };
+
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -322,12 +342,19 @@ export function Contact() {
                           <div className="w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                              <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
-                                type="time"
+                              <select 
                                 value={ev.startTime}
                                 onChange={(e) => handleEventChange(index, 'startTime', e.target.value)}
-                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
-                              />
+                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0 appearance-none`}
+                              >
+                                <option value="" disabled>--:--</option>
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                  const h24 = i.toString().padStart(2, '0');
+                                  const h12 = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                                  const ampm = i < 12 ? 'AM' : 'PM';
+                                  return <option key={h24} value={`${h24}:00`}>{`${h12}:00 ${ampm}`}</option>;
+                                })}
+                              </select>
                             </div>
                             {errors[`startTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`startTime_${ev.type}`]}</span>}
                           </div>
@@ -335,12 +362,19 @@ export function Contact() {
                           <div className="w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                              <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
-                                type="time"
+                              <select 
                                 value={ev.endTime}
                                 onChange={(e) => handleEventChange(index, 'endTime', e.target.value)}
-                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
-                              />
+                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0 appearance-none`}
+                              >
+                                <option value="" disabled>--:--</option>
+                                {Array.from({ length: 24 }).map((_, i) => {
+                                  const h24 = i.toString().padStart(2, '0');
+                                  const h12 = i === 0 ? 12 : (i > 12 ? i - 12 : i);
+                                  const ampm = i < 12 ? 'AM' : 'PM';
+                                  return <option key={h24} value={`${h24}:00`}>{`${h12}:00 ${ampm}`}</option>;
+                                })}
+                              </select>
                             </div>
                             {errors[`endTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`endTime_${ev.type}`]}</span>}
                           </div>
