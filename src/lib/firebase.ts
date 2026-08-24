@@ -1,10 +1,10 @@
-// Mock Firebase for local development when config is missing
-export const auth: any = {
-  signOut: () => Promise.resolve(),
-  onAuthStateChanged: (cb: any) => {
-    // We handle local auth in AuthContext manually
-    return () => {};
-  }
-};
-export const db: any = {};
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import firebaseConfig from '../../firebase-applet-config.json';
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export { signInWithPopup };
+
 

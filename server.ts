@@ -247,6 +247,61 @@ async function startServer() {
     res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   });
 
+  app.post("/api/auth/google", async (req, res) => {
+    const { email, name, photoURL } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required from Google Auth" });
+    }
+
+    let user = db.users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (!user) {
+      // Register new user from Google
+      const newUserId = `CLI-${Math.floor(100 + Math.random() * 900)}`;
+      user = {
+        id: newUserId,
+        email,
+        password: Math.random().toString(36).slice(-8), // Random fallback password
+        name: name || email.split('@')[0],
+        role: 'client'
+      };
+      db.users.push(user);
+      pushToSupabase('users', user);
+      
+      const newClient = {
+        id: newUserId,
+        name: user.name,
+        email: user.email,
+        phone: 'Not provided',
+        location: 'Unknown',
+        eventName: 'Pending Booking',
+        eventType: 'Unknown',
+        eventDate: 'Not Scheduled',
+        package: 'Pending Selection',
+        status: 'active',
+        totalAmount: 0,
+        paidAmount: 0
+      };
+      db.clients.push(newClient);
+      pushToSupabase('clients', newClient);
+
+      const activity = {
+        id: `ACT-${Date.now()}`,
+        clientName: user.name,
+        type: 'Registration',
+        description: `Client registered via Google.`,
+        timestamp: new Date().toISOString()
+      };
+      db.activities.unshift(activity);
+      pushToSupabase('activities', activity);
+      if (db.activities.length > 100) db.activities.pop();
+      
+      saveDb();
+    }
+    
+    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  });
+
   // Data Routes
   app.get("/api/clients", (req, res) => res.json(db.clients));
   app.post("/api/clients", async (req, res) => {
