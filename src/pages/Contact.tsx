@@ -230,7 +230,7 @@ export function Contact() {
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden"
+          className="glass-panel p-5 sm:p-8 md:p-12 rounded-3xl relative overflow-hidden"
         >
           <AnimatePresence>
             {showSuccess && (
@@ -255,7 +255,7 @@ export function Contact() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full bg-white/5 border ${errors.name ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
+                className={`w-full bg-white/5 border ${errors.name ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
                 placeholder="John Doe"
               />
               {errors.name && <span className="text-red-500 text-xs mt-1 block">{errors.name}</span>}
@@ -264,7 +264,7 @@ export function Contact() {
             <div>
               <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Event Types (Select Multiple)</label>
               {errors.events && <span className="text-red-500 text-xs mb-3 block">{errors.events}</span>}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {events.map((ev, index) => (
                   <div key={index} className="flex flex-col gap-2">
                     <label className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors ${ev.selected ? 'border-[#f2a900] bg-[#f2a900]/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}>
@@ -272,7 +272,7 @@ export function Contact() {
                         type="checkbox" 
                         checked={ev.selected}
                         onChange={() => toggleEvent(index)}
-                        className="accent-[#f2a900] w-4 h-4"
+                        className="accent-[#f2a900] w-4 h-4 shrink-0"
                       />
                       <span className="text-sm font-medium">{ev.type}</span>
                     </label>
@@ -286,7 +286,7 @@ export function Contact() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     key={`details-${index}`} 
-                    className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-3"
+                    className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-4"
                   >
                     <h5 className="font-semibold text-[#f2a900]">{ev.type} Details</h5>
                     
@@ -297,14 +297,14 @@ export function Contact() {
                           placeholder="Specify Event Type"
                           value={ev.customType}
                           onChange={(e) => handleEventChange(index, 'customType', e.target.value)}
-                          className={`w-full bg-black/50 border ${errors[`custom_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#f2a900]`}
+                          className={`w-full bg-black/50 border ${errors[`custom_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg px-3 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]`}
                         />
                         {errors[`custom_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`custom_${ev.type}`]}</span>}
                       </div>
                     )}
                     
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                         <div>
                           <div className="relative">
                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
@@ -312,34 +312,34 @@ export function Contact() {
                               type="date"
                               value={ev.date}
                               onChange={(e) => handleEventChange(index, 'date', e.target.value)}
-                              className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${errors[`date_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                              className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${errors[`date_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                             />
                           </div>
                           {errors[`date_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`date_${ev.type}`]}</span>}
                         </div>
                         
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <div className="flex-1 w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                               <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                 type="time"
                                 value={ev.startTime}
                                 onChange={(e) => handleEventChange(index, 'startTime', e.target.value)}
-                                className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                               />
                             </div>
                             {errors[`startTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`startTime_${ev.type}`]}</span>}
                           </div>
-                          <span className="text-white/50 text-xs">to</span>
-                          <div className="flex-1">
+                          <span className="text-white/50 text-xs hidden sm:block">to</span>
+                          <div className="flex-1 w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                               <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                 type="time"
                                 value={ev.endTime}
                                 onChange={(e) => handleEventChange(index, 'endTime', e.target.value)}
-                                className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                               />
                             </div>
                             {errors[`endTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`endTime_${ev.type}`]}</span>}
@@ -347,8 +347,8 @@ export function Contact() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-                        <div className={ev.type === 'Barat' ? 'col-span-1' : 'col-span-1 md:col-span-2'}>
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mt-1">
+                        <div className={ev.type === 'Barat' ? 'col-span-1' : 'col-span-1 xl:col-span-2'}>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                             <input 
@@ -356,14 +356,14 @@ export function Contact() {
                               placeholder={ev.type === 'Barat' ? 'Departure Location' : 'Venue Location'}
                               value={ev.startLocation}
                               onChange={(e) => handleEventChange(index, 'startLocation', e.target.value)}
-                              className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${errors[`startLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                              className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${errors[`startLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                             />
                           </div>
                           {errors[`startLocation_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`startLocation_${ev.type}`]}</span>}
                         </div>
                         
                         {ev.type === 'Barat' && (
-                          <div>
+                          <div className="col-span-1">
                             <div className="relative">
                               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                               <input 
@@ -371,7 +371,7 @@ export function Contact() {
                                 placeholder="Arrival Location"
                                 value={ev.endLocation}
                                 onChange={(e) => handleEventChange(index, 'endLocation', e.target.value)}
-                                className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${errors[`endLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${errors[`endLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                               />
                             </div>
                             {errors[`endLocation_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`endLocation_${ev.type}`]}</span>}
@@ -390,7 +390,7 @@ export function Contact() {
                 name="package"
                 value={formData.package}
                 onChange={handleChange}
-                className={`w-full bg-[#111] border ${errors.package ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors appearance-none [color-scheme:dark] [color-scheme:dark] [color-scheme:dark]`}
+                className={`w-full bg-[#111] border ${errors.package ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors appearance-none [color-scheme:dark]`}
               >
                 <option value="None selected">Select a package...</option>
                 <option value="Rs. 50,000 Package">Rs. 50,000 Package</option>
@@ -412,7 +412,7 @@ export function Contact() {
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
-                  className={`w-full bg-white/5 border ${errors.budget ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
+                  className={`w-full bg-white/5 border ${errors.budget ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
                   placeholder="e.g. 150000"
                 />
                 {errors.budget && <span className="text-red-500 text-xs mt-1 block">{errors.budget}</span>}

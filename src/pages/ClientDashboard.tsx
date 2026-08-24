@@ -1073,7 +1073,7 @@ export function ClientDashboard() {
                 <div>
                   <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-3">Event Types (Select Multiple)</label>
                   {bookingErrors.events && <span className="text-red-500 text-xs mb-3 block">{bookingErrors.events}</span>}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {bookingEvents.map((ev, index) => (
                       <div key={index} className="flex flex-col gap-2">
                         <label className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors ${ev.selected ? 'border-[#f2a900] bg-[#f2a900]/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}>
@@ -1081,7 +1081,7 @@ export function ClientDashboard() {
                             type="checkbox" 
                             checked={ev.selected}
                             onChange={() => toggleBookingEvent(index)}
-                            className="accent-[#f2a900] w-4 h-4"
+                            className="accent-[#f2a900] w-4 h-4 shrink-0"
                           />
                           <span className="text-sm font-medium">{ev.type}</span>
                         </label>
@@ -1113,7 +1113,7 @@ export function ClientDashboard() {
                         )}
                         
                         <div className="grid grid-cols-1 gap-3">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                             <div>
                               <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
@@ -1121,34 +1121,34 @@ export function ClientDashboard() {
                                   type="date"
                                   value={ev.date}
                                   onChange={(e) => handleBookingEventChange(index, 'date', e.target.value)}
-                                  className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${bookingErrors[`date_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                  className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${bookingErrors[`date_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                                 />
                               </div>
                               {bookingErrors[`date_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`date_${ev.type}`]}</span>}
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                              <div className="flex-1 w-full">
                                 <div className="relative">
                                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                                   <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                     type="time"
                                     value={ev.startTime}
                                     onChange={(e) => handleBookingEventChange(index, 'startTime', e.target.value)}
-                                    className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${bookingErrors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                    className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${bookingErrors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                                   />
                                 </div>
                                 {bookingErrors[`startTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`startTime_${ev.type}`]}</span>}
                               </div>
-                              <span className="text-white/50 text-xs">to</span>
-                              <div className="flex-1">
+                              <span className="text-white/50 text-xs hidden sm:block">to</span>
+                              <div className="flex-1 w-full">
                                 <div className="relative">
                                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                                   <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                     type="time"
                                     value={ev.endTime}
                                     onChange={(e) => handleBookingEventChange(index, 'endTime', e.target.value)}
-                                    className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${bookingErrors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                    className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${bookingErrors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                                   />
                                 </div>
                                 {bookingErrors[`endTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`endTime_${ev.type}`]}</span>}
@@ -1156,8 +1156,8 @@ export function ClientDashboard() {
                             </div>
                           </div>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-                            <div className={ev.type === 'Barat' ? 'col-span-1' : 'col-span-1 md:col-span-2'}>
+                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mt-1">
+                            <div className={ev.type === 'Barat' ? 'col-span-1' : 'col-span-1 xl:col-span-2'}>
                               <div className="relative">
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                                 <input 
@@ -1165,14 +1165,14 @@ export function ClientDashboard() {
                                   placeholder={ev.type === 'Barat' ? 'Departure Location' : 'Venue Location'}
                                   value={ev.startLocation}
                                   onChange={(e) => handleBookingEventChange(index, 'startLocation', e.target.value)}
-                                  className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${bookingErrors[`startLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                  className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${bookingErrors[`startLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                                 />
                               </div>
                               {bookingErrors[`startLocation_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`startLocation_${ev.type}`]}</span>}
                             </div>
                             
                             {ev.type === 'Barat' && (
-                              <div>
+                              <div className="col-span-1">
                                 <div className="relative">
                                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                                   <input 
@@ -1180,7 +1180,7 @@ export function ClientDashboard() {
                                     placeholder="Arrival Location"
                                     value={ev.endLocation}
                                     onChange={(e) => handleBookingEventChange(index, 'endLocation', e.target.value)}
-                                    className={`w-full pl-9 pr-3 py-2 bg-black/50 border ${bookingErrors[`endLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                    className={`w-full pl-9 pr-3 py-3 bg-black/50 border ${bookingErrors[`endLocation_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
                                   />
                                 </div>
                                 {bookingErrors[`endLocation_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{bookingErrors[`endLocation_${ev.type}`]}</span>}
