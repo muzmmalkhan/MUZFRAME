@@ -137,6 +137,13 @@
   "activities": [
     {
       "clientName": "khuzaima1",
+      "type": "Logout",
+      "description": "Client logged out of their portal.",
+      "id": "ACT-1787565059595",
+      "timestamp": "2026-08-24T09:50:59.595Z"
+    },
+    {
+      "clientName": "khuzaima1",
       "type": "Login",
       "description": "Client accessed their portal.",
       "id": "ACT-1785137310797",
@@ -316,6 +323,13 @@
       "type": "Logout",
       "description": "Client logged out of their portal.",
       "timestamp": "2026-07-16T05:54:46.687Z"
+    }
+  ],
+  "blockedDates": [
+    {
+      "id": "BLK-1787573448235",
+      "date": "2026-08-25",
+      "reason": "Admin Blocked"
     }
   ]
 }

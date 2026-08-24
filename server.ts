@@ -166,30 +166,31 @@ async function startServer() {
 
   // Auth Routes
   app.post("/api/auth/register", async (req, res) => {
-    const { email, password, name, location } = req.body;
-    if (!email || !password || password.length < 6) {
-      return res.status(400).json({ error: "Email and a strong password (min 6 chars) are required" });
+    const { phone, password, name, location } = req.body;
+
+    if (!phone || !password || password.length < 6) {
+      return res.status(400).json({ error: "Phone number and a strong password (min 6 chars) are required" });
     }
+
     if (!name || name.trim().length < 3) {
       return res.status(400).json({ error: "A valid full name is required" });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Invalid email format" });
-    }
-    const existing = db.users.find(u => u.email === email);
+
+    const existing = db.users.find(u => u.phone === phone || u.email === phone);
     if (existing) {
-      return res.status(400).json({ error: "User already exists" });
+      return res.status(400).json({ error: "User already exists with this phone number" });
     }
     
     const newUserId = `CLI-${Math.floor(100 + Math.random() * 900)}`;
     const newUser = {
       id: newUserId,
-      email,
+      email: `${phone.replace(/\s/g, '')}@client.muzframe`, // Fallback for email dependencies
+      phone: phone,
       password, // In a real app, hash this!
-      name: name || email.split('@')[0],
+      name: name,
       role: 'client'
     };
+    
     db.users.push(newUser);
     pushToSupabase('users', newUser);
     
@@ -197,7 +198,7 @@ async function startServer() {
       id: newUserId,
       name: newUser.name,
       email: newUser.email,
-      phone: 'Not provided',
+      phone: newUser.phone,
       location: location || 'Unknown',
       eventName: 'Pending Booking',
       eventType: 'Unknown',
@@ -227,22 +228,22 @@ async function startServer() {
   });
 
   app.post("/api/auth/login", (req, res) => {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
     
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    if (!phone || !password) {
+      return res.status(400).json({ error: "Phone number and password are required" });
     }
 
     // Hardcoded admin login
-    if (email === 'muz@frame') {
+    if (phone === 'muz@frame' || phone === 'admin') {
       if (password === 'muz@frame') {
-        return res.json({ user: { id: 'admin', email: 'muz@frame', name: 'Admin', role: 'admin' } });
+        return res.json({ user: { id: 'admin', email: 'muz@frame', phone: 'admin', name: 'Admin', role: 'admin' } });
       } else {
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
     }
 
-    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+    const user = db.users.find(u => (u.phone === phone || u.email === phone) && u.password === password);
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }

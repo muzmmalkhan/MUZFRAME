@@ -1,4 +1,4 @@
-import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin } from 'lucide-react';
+import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin , Phone} from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ export function Login() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [viewMode, setViewMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [clientLocation, setClientLocation] = useState('');
@@ -40,14 +40,14 @@ export function Login() {
     setSuccessMsg('');
 
     if (viewMode === 'forgot') {
-      if (!email) {
-        setError('Please enter your email address to reset password');
+      if (!phone) {
+        setError('Please enter your phone number to reset password');
         return;
       }
       setIsLoading(true);
       try {
-        await resetPassword(email);
-        setSuccessMsg('Password reset instructions have been dispatched to ' + email);
+        await resetPassword(phone);
+        setSuccessMsg('Password reset instructions have been dispatched to ' + phone);
       } catch (err: any) {
         setError(err.message || 'Failed to send reset email');
       } finally {
@@ -69,14 +69,13 @@ export function Login() {
         setError('Password must be at least 6 characters long');
         return;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError('Please enter a valid email address');
+      if (!phone || phone.trim().length < 10) {
+        setError('Please enter a valid phone number (at least 10 digits)');
         return;
       }
     } else {
-      if (!email || !password) {
-        setError('Please enter both email and password');
+      if (!phone || !password) {
+        setError('Please enter both phone number and password');
         return;
       }
     }
@@ -87,7 +86,7 @@ export function Login() {
         const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name, location: clientLocation })
+          body: JSON.stringify({ phone, password, name, location: clientLocation })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Registration failed');
@@ -96,7 +95,7 @@ export function Login() {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ phone, password })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Invalid credentials');
@@ -158,9 +157,9 @@ export function Login() {
             <h1 id="client-area-heading" className="font-serif text-3xl font-medium mb-2 text-white">
               {viewMode === 'signup' ? "Create Account" : viewMode === 'forgot' ? "Forgot Password" : "Client Area"}
             </h1>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/80 text-base sm:text-lg font-light tracking-wide mx-auto max-w-md mt-3 leading-relaxed">
               {viewMode === 'forgot' 
-                ? "Enter your registered email to receive a secure password reset link." 
+                ? "Enter your registered phone number to receive a secure password reset link." 
                 : "Securely manage event details, timeline, and private collections."}
             </p>
           </div>
@@ -205,12 +204,12 @@ export function Login() {
             )}
             
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
               <input 
                 type="text" 
-                placeholder="Email Address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Phone Number (e.g. 03001234567)" 
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]/60 transition-colors text-sm"
               />
@@ -245,7 +244,7 @@ export function Login() {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-[#f2a900] text-black rounded-xl px-4 py-4 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-all group shadow-lg shadow-[#f2a900]/20 disabled:opacity-50 mt-4"
+              className="w-full bg-[#f2a900] text-black rounded-xl px-4 py-5 font-bold uppercase tracking-widest text-base sm:text-lg flex items-center justify-center gap-2 hover:bg-white transition-all group shadow-xl shadow-[#f2a900]/30 disabled:opacity-50 mt-6"
             >
               {isLoading ? "Processing..." : viewMode === 'signup' ? "Create Client Account" : viewMode === 'forgot' ? "Send Reset Instructions" : "Secure Login"}
             </button>
@@ -287,13 +286,13 @@ export function Login() {
             </div>
           ) : (
             <>
-              <p className="text-center text-white/50 text-xs mt-6">
+              <p className="text-center text-white/70 text-sm sm:text-base mt-8 bg-white/5 py-4 rounded-xl border border-white/10">
                 {viewMode === 'signup' ? "Already have an account?" : "Don't have a client account?"}
                 <button 
                   onClick={() => { setViewMode(viewMode === 'signup' ? 'signin' : 'signup'); setError(''); setSuccessMsg(''); }} 
-                  className="text-[#f2a900] hover:underline font-semibold ml-2"
+                  className="text-[#f2a900] hover:text-white font-bold ml-2 underline underline-offset-4 decoration-[#f2a900]/50 hover:decoration-white transition-colors"
                 >
-                  {viewMode === 'signup' ? "Sign In" : "Register"}
+                  {viewMode === 'signup' ? "Sign In Now" : "Create Account"}
                 </button>
               </p>
             </>
