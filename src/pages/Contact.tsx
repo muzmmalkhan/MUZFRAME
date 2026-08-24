@@ -304,7 +304,7 @@ export function Contact() {
                     )}
                     
                     <div className="grid grid-cols-1 gap-3">
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <div>
                           <div className="relative">
                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
@@ -318,28 +318,28 @@ export function Contact() {
                           {errors[`date_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`date_${ev.type}`]}</span>}
                         </div>
                         
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <div className="flex-1 w-full">
+                        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                          <div className="w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                               <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                 type="time"
                                 value={ev.startTime}
                                 onChange={(e) => handleEventChange(index, 'startTime', e.target.value)}
-                                className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`startTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
                               />
                             </div>
                             {errors[`startTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`startTime_${ev.type}`]}</span>}
                           </div>
-                          <span className="text-white/50 text-xs hidden sm:block">to</span>
-                          <div className="flex-1 w-full">
+                          <span className="text-white/50 text-xs">to</span>
+                          <div className="w-full">
                             <div className="relative">
                               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                               <input onClick={(e) => { try { (e.target as HTMLInputElement).showPicker() } catch(err) {} }} 
                                 type="time"
                                 value={ev.endTime}
                                 onChange={(e) => handleEventChange(index, 'endTime', e.target.value)}
-                                className={`w-full pl-9 pr-2 py-3 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark]`}
+                                className={`w-full pl-8 pr-2 py-3 bg-black/50 border ${errors[`endTime_${ev.type}`] ? 'border-red-500' : 'border-white/10'} rounded-lg text-sm text-white focus:outline-none focus:border-[#f2a900] [color-scheme:dark] min-w-0`}
                               />
                             </div>
                             {errors[`endTime_${ev.type}`] && <span className="text-red-500 text-xs mt-1 block">{errors[`endTime_${ev.type}`]}</span>}
@@ -347,7 +347,7 @@ export function Contact() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mt-1">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-1">
                         <div className={ev.type === 'Barat' ? 'col-span-1' : 'col-span-1 xl:col-span-2'}>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
