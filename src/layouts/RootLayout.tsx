@@ -1,7 +1,6 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { CustomCursor } from '../components/CustomCursor';
 import { ScrollProgress } from '../components/ScrollProgress';
 import { AIChatbot } from '../components/AIChatbot';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,8 +20,7 @@ export function RootLayout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col cursor-none">
-      <CustomCursor />
+    <div className="min-h-screen flex flex-col">
       <ScrollProgress />
       <Navbar />
       <main className="flex-1">
