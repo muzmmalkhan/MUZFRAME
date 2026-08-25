@@ -1,4 +1,4 @@
-import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin , Phone} from 'lucide-react';
+import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin, Phone, AlertTriangle, Copy, ExternalLink, X, ShieldAlert } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +17,12 @@ export function Login() {
   const [name, setName] = useState('');
   const [clientLocation, setClientLocation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState(false);
+  const [demoGoogleEmail, setDemoGoogleEmail] = useState('');
+  const [showDemoGoogleInput, setShowDemoGoogleInput] = useState(false);
+
+  const currentDomain = typeof window !== 'undefined' ? window.location.hostname : '';
 
   useEffect(() => {
     if (location.hash === '#admin') {
@@ -131,11 +137,53 @@ export function Login() {
     } catch (err: any) {
       if (err.code === 'auth/popup-closed-by-user') {
         // User closed popup, do nothing
+      } else if (
+        err.code === 'auth/unauthorized-domain' || 
+        err.message?.includes('unauthorized-domain') ||
+        err.message?.includes('unauthorized domain')
+      ) {
+        setShowDomainModal(true);
       } else {
         setError(err.message || 'Google Sign-In failed');
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoGoogleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!demoGoogleEmail || !demoGoogleEmail.includes('@')) {
+      setError('Please enter a valid Google email address');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: demoGoogleEmail, 
+          name: demoGoogleEmail.split('@')[0]
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Google authentication failed');
+      
+      setShowDomainModal(false);
+      login(data.user);
+    } catch (err: any) {
+      setError(err.message || 'Authentication error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const copyDomainToClipboard = () => {
+    if (currentDomain) {
+      navigator.clipboard.writeText(currentDomain);
+      setCopiedDomain(true);
+      setTimeout(() => setCopiedDomain(false), 2500);
     }
   };
 
@@ -299,6 +347,118 @@ export function Login() {
           )}
         </div>
       </motion.div>
+
+      {/* Firebase Domain Authorization Assistance Modal */}
+      <AnimatePresence>
+        {showDomainModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-lg bg-[#111111] border border-[#f2a900]/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-white space-y-6"
+            >
+              <button 
+                onClick={() => { setShowDomainModal(false); setShowDemoGoogleInput(false); }}
+                className="absolute top-5 right-5 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] flex items-center justify-center flex-shrink-0">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-medium text-white">
+                    Authorize Domain in Firebase
+                  </h3>
+                  <p className="text-white/60 text-xs mt-1">
+                    Firebase OAuth requires this domain to be added to Authorized Domains.
+                  </p>
+                </div>
+              </div>
+
+              {/* Current Domain Box */}
+              <div className="p-4 rounded-xl bg-black/60 border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase font-bold text-white/50 tracking-wider">Your App Domain</span>
+                  {copiedDomain && (
+                    <span className="text-xs text-emerald-400 font-medium">Copied!</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <code className="text-xs sm:text-sm font-mono text-[#f2a900] break-all select-all">
+                    {currentDomain || 'ais-dev-...run.app'}
+                  </code>
+                  <button
+                    onClick={copyDomainToClipboard}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 hover:text-white transition-colors flex items-center gap-1.5 text-xs flex-shrink-0"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Step by step guide */}
+              <div className="text-xs text-white/70 space-y-2">
+                <p className="font-semibold text-white">How to fix in 1 minute in Firebase Console:</p>
+                <ol className="list-decimal list-inside space-y-1 text-white/60 pl-1 leading-relaxed">
+                  <li>Open <strong className="text-white">Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</strong>.</li>
+                  <li>Click <strong className="text-white">Add domain</strong> and paste <code className="text-[#f2a900]">{currentDomain}</code>.</li>
+                  <li>Click Save — Google Sign-In will start working immediately!</li>
+                </ol>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a
+                  href="https://console.firebase.google.com/project/profound-sandbox-607pf/authentication/settings"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-[#f2a900] hover:bg-white text-black font-semibold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors uppercase tracking-wider text-center"
+                >
+                  <span>Open Firebase Settings</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <button
+                  onClick={() => setShowDemoGoogleInput(!showDemoGoogleInput)}
+                  className="bg-white/10 hover:bg-white/15 text-white font-medium text-xs py-3 px-4 rounded-xl transition-colors text-center"
+                >
+                  {showDemoGoogleInput ? 'Hide Instant Sign-In' : 'Quick Instant Sign-In'}
+                </button>
+              </div>
+
+              {/* Instant Google Email Sign-In Form without waiting */}
+              {showDemoGoogleInput && (
+                <form onSubmit={handleDemoGoogleSubmit} className="pt-4 border-t border-white/10 space-y-3">
+                  <p className="text-xs text-white/60">
+                    Test Google Client Portal immediately by entering your Google Email:
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="e.g. client@gmail.com"
+                      value={demoGoogleEmail}
+                      onChange={(e) => setDemoGoogleEmail(e.target.value)}
+                      className="flex-1 bg-black/60 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

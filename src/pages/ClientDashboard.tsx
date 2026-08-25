@@ -771,9 +771,9 @@ export function ClientDashboard() {
                     <h3 className="font-serif text-xl font-medium text-white mb-4">Assigned Studio Team</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="bg-black/50 p-4 rounded-2xl border border-white/5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#f2a900]/20 text-[#f2a900] flex items-center justify-center font-bold">MR</div>
+                        <div className="w-12 h-12 rounded-full bg-[#f2a900]/20 text-[#f2a900] flex items-center justify-center font-bold">MK</div>
                         <div>
-                          <p className="text-white text-sm font-medium">Muzammil Rashid</p>
+                          <p className="text-white text-sm font-medium">Muzammal Khan</p>
                           <p className="text-white/50 text-xs">Lead Cinematographer & Director</p>
                         </div>
                       </div>
@@ -836,7 +836,7 @@ export function ClientDashboard() {
                   <h2 className="font-serif text-2xl font-medium text-white flex items-center gap-2">
                     <Music className="w-6 h-6 text-[#f2a900]" /> Assigned Song Selection & Playlist
                   </h2>
-                  <p className="text-white/60 text-xs mt-1">Review the tracks curated by Muzammil Frame Studio for your cinematic highlights film.</p>
+                  <p className="text-white/60 text-xs mt-1">Review the tracks curated by MuzFrame Studio for your cinematic highlights film.</p>
                 </div>
                 <span className={`border px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest self-start md:self-center ${playlistData?.status === 'Submitted & Locked' ? 'bg-[#f2a900]/20 text-[#f2a900] border-[#f2a900]/30' : 'bg-white/10 text-white/70 border-white/20'}`}>
                   {playlistData?.status || 'Draft'}

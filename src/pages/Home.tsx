@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play, Camera, Star, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { TrustedBrandsSection } from '../components/TrustedBrandsSection';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=3000&auto=format&fit=crop', // Stunning Drone view
@@ -107,6 +108,9 @@ export function Home() {
           ))}
         </div>
       </section>
+
+      {/* Chosen By Section (Bajwas Collection, Modern Cash & Carry, Shamsheer) */}
+      <TrustedBrandsSection />
 
       {/* Services Snippet */}
       <section className="bg-black py-24 border-t border-white/5">

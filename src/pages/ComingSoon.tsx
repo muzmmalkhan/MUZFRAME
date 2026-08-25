@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AIChatbot } from '../components/AIChatbot';
+import { WhatsAppButton } from '../components/WhatsAppButton';
 
 export function ComingSoon() {
   const calculateTimeLeft = () => {
@@ -77,7 +77,7 @@ export function ComingSoon() {
           </a>
         </div>
       </motion.div>
-      <AIChatbot />
+      <WhatsAppButton />
     </div>
   );
 }

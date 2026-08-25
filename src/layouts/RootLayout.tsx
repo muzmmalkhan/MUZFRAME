@@ -2,7 +2,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ScrollProgress } from '../components/ScrollProgress';
-import { AIChatbot } from '../components/AIChatbot';
+import { WhatsAppButton } from '../components/WhatsAppButton';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -27,7 +27,7 @@ export function RootLayout() {
         <Outlet />
       </main>
       <Footer />
-      <AIChatbot />
+      <WhatsAppButton />
     </div>
   );
 }

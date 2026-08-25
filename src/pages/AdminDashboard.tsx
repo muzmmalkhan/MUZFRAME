@@ -320,7 +320,7 @@ export function AdminDashboard() {
       eventType: created.eventType || 'Wedding',
       date: created.eventDate,
       venue: 'Grand Marquee Studio Venue',
-      teamLead: 'Muzammil Rashid (Lead Cinematographer)',
+      teamLead: 'Muzammal Khan (Lead Cinematographer)',
       packageDetails: created.package,
       status: 'Upcoming',
       deliverablesCount: 0
@@ -485,7 +485,7 @@ export function AdminDashboard() {
             <div>
               <h1 class="title">MUZFRAME CINEMATOGRAPHY</h1>
               <div class="subtitle">Luxury Wedding & Cinematic Films • Office No.32, Hasilpur</div>
-              <div class="subtitle">Director: Muzammil Rashid • Contact: +92 300 6103262</div>
+              <div class="subtitle">Director: Muzammal Khan • Contact: +92 300 6103262</div>
             </div>
             <div>
               <span class="badge">OFFICIAL INVOICE</span>
@@ -535,7 +535,7 @@ export function AdminDashboard() {
 
           <div class="stamp">
             <div style="margin-bottom: 40px; font-style: italic; color: #555;">Authorized Electronic Signature</div>
-            <div class="stamp-line">Muzammil Rashid (Lead Director)</div>
+            <div class="stamp-line">Muzammal Khan (Lead Director)</div>
           </div>
           <script>window.print();</script>
         </body>
