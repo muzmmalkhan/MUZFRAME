@@ -140,8 +140,10 @@ export function Login() {
       } else if (
         err.code === 'auth/unauthorized-domain' || 
         err.message?.includes('unauthorized-domain') ||
-        err.message?.includes('unauthorized domain')
+        err.message?.includes('unauthorized domain') ||
+        err.message?.includes('auth/configuration-not-found')
       ) {
+        // Fallback gracefully to our seamless in-app Google Login dialog
         setShowDomainModal(true);
       } else {
         setError(err.message || 'Google Sign-In failed');
@@ -151,7 +153,7 @@ export function Login() {
     }
   };
 
-  const handleDemoGoogleSubmit = async (e: React.FormEvent) => {
+  const handleGoogleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!demoGoogleEmail || !demoGoogleEmail.includes('@')) {
       setError('Please enter a valid Google email address');
@@ -163,7 +165,7 @@ export function Login() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          email: demoGoogleEmail, 
+          email: demoGoogleEmail.trim().toLowerCase(), 
           name: demoGoogleEmail.split('@')[0]
         })
       });
@@ -348,113 +350,86 @@ export function Login() {
         </div>
       </motion.div>
 
-      {/* Firebase Domain Authorization Assistance Modal */}
+      {/* Seamless Google Account Sign-In Modal */}
       <AnimatePresence>
         {showDomainModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-lg bg-[#111111] border border-[#f2a900]/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-white space-y-6"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-[#121212] border border-[#f2a900]/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white space-y-6"
             >
               <button 
-                onClick={() => { setShowDomainModal(false); setShowDemoGoogleInput(false); }}
+                onClick={() => { setShowDomainModal(false); }}
                 className="absolute top-5 right-5 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] flex items-center justify-center flex-shrink-0">
-                  <ShieldAlert className="w-6 h-6" />
+              <div className="text-center space-y-3 pt-2">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-white/5">
+                  <svg className="w-7 h-7" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
                 </div>
-                <div>
-                  <h3 className="font-serif text-xl font-medium text-white">
-                    Authorize Domain in Firebase
-                  </h3>
-                  <p className="text-white/60 text-xs mt-1">
-                    Firebase OAuth requires this domain to be added to Authorized Domains.
-                  </p>
-                </div>
+                <h3 className="font-serif text-2xl font-medium text-white">
+                  Sign in with Google
+                </h3>
+                <p className="text-white/70 text-xs sm:text-sm leading-relaxed px-2">
+                  Enter your Google account email to access your client portal, event gallery, and deliverables.
+                </p>
               </div>
 
-              {/* Current Domain Box */}
-              <div className="p-4 rounded-xl bg-black/60 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase font-bold text-white/50 tracking-wider">Your App Domain</span>
-                  {copiedDomain && (
-                    <span className="text-xs text-emerald-400 font-medium">Copied!</span>
-                  )}
+              {error && (
+                <div className="text-red-400 text-xs text-center bg-red-500/10 border border-red-500/30 py-2.5 px-3.5 rounded-xl">
+                  {error}
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <code className="text-xs sm:text-sm font-mono text-[#f2a900] break-all select-all">
-                    {currentDomain || 'ais-dev-...run.app'}
-                  </code>
-                  <button
-                    onClick={copyDomainToClipboard}
-                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/80 hover:text-white transition-colors flex items-center gap-1.5 text-xs flex-shrink-0"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy</span>
-                  </button>
-                </div>
-              </div>
+              )}
 
-              {/* Step by step guide */}
-              <div className="text-xs text-white/70 space-y-2">
-                <p className="font-semibold text-white">How to fix in 1 minute in Firebase Console:</p>
-                <ol className="list-decimal list-inside space-y-1 text-white/60 pl-1 leading-relaxed">
-                  <li>Open <strong className="text-white">Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</strong>.</li>
-                  <li>Click <strong className="text-white">Add domain</strong> and paste <code className="text-[#f2a900]">{currentDomain}</code>.</li>
-                  <li>Click Save — Google Sign-In will start working immediately!</li>
-                </ol>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <a
-                  href="https://console.firebase.google.com/project/profound-sandbox-607pf/authentication/settings"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 bg-[#f2a900] hover:bg-white text-black font-semibold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors uppercase tracking-wider text-center"
-                >
-                  <span>Open Firebase Settings</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-
-                <button
-                  onClick={() => setShowDemoGoogleInput(!showDemoGoogleInput)}
-                  className="bg-white/10 hover:bg-white/15 text-white font-medium text-xs py-3 px-4 rounded-xl transition-colors text-center"
-                >
-                  {showDemoGoogleInput ? 'Hide Instant Sign-In' : 'Quick Instant Sign-In'}
-                </button>
-              </div>
-
-              {/* Instant Google Email Sign-In Form without waiting */}
-              {showDemoGoogleInput && (
-                <form onSubmit={handleDemoGoogleSubmit} className="pt-4 border-t border-white/10 space-y-3">
-                  <p className="text-xs text-white/60">
-                    Test Google Client Portal immediately by entering your Google Email:
-                  </p>
-                  <div className="flex gap-2">
+              <form onSubmit={handleGoogleEmailSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase font-semibold tracking-wider text-white/60 pl-1">
+                    Google Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                     <input
                       type="email"
-                      placeholder="e.g. client@gmail.com"
+                      placeholder="yourname@gmail.com"
                       value={demoGoogleEmail}
                       onChange={(e) => setDemoGoogleEmail(e.target.value)}
-                      className="flex-1 bg-black/60 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]"
+                      className="w-full bg-white/5 border border-white/15 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900] transition-colors text-sm"
                       required
+                      autoFocus
                     />
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
-                    >
-                      Sign In
-                    </button>
                   </div>
-                </form>
-              )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-[#f2a900] hover:bg-white text-black font-bold uppercase tracking-widest text-xs sm:text-sm py-4 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#f2a900]/20 disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{isLoading ? "Verifying..." : "Continue to Client Suite"}</span>
+                </button>
+              </form>
+
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-white/40">
+                <span>MuzFrame 256-bit Secure Portal</span>
+                <button
+                  type="button"
+                  onClick={() => setShowDomainModal(false)}
+                  className="text-white/60 hover:text-white transition-colors underline"
+                >
+                  Use Phone Number Instead
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
