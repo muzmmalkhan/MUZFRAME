@@ -405,32 +405,7 @@ export function ClientDashboard() {
     }
   };
 
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-black pt-28 pb-20 px-6 flex flex-col items-center justify-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl mx-auto flex flex-col items-center"
-        >
-          <div className="w-20 h-20 bg-[#f2a900]/10 rounded-full flex items-center justify-center mb-8 border border-[#f2a900]/20">
-            <Lock className="w-10 h-10 text-[#f2a900]" />
-          </div>
-          <h1 className="font-serif text-5xl lg:text-7xl font-medium text-white leading-tight mb-6">
-            Client Portal <br />
-            <span className="text-[#f2a900] italic">Coming Soon</span>
-          </h1>
-          <p className="text-white/60 text-lg leading-relaxed mb-10">
-            Our dedicated client portal is currently under development. It will launch on August 28th, bringing you a fully immersive experience to review, manage, and download your precious moments.
-          </p>
-          <button onClick={handleLogout} className="btn-primary flex items-center gap-2">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="pt-24 pb-24 min-h-screen bg-black">
