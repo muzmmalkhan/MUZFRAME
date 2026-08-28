@@ -13,7 +13,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { MuzBeauty } from './pages/MuzBeauty';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: string }) {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -26,6 +26,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Strict check for admin area
+  if (requiredRole === 'admin' && (user.role !== 'admin' || user.email !== 'muzmmal.khan99@gmail.com')) {
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -48,7 +53,7 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             
             <Route path="/client/:id" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>
