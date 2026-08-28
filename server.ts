@@ -234,13 +234,8 @@ async function startServer() {
       return res.status(400).json({ error: "Phone number and password are required" });
     }
 
-    // Strict hardcoded admin login
     if (phone === 'muzammal.frames' || phone === 'muzmmal.khan99@gmail.com') {
-      if (password === 'muzammal.frames') {
-        return res.json({ user: { id: 'admin', email: 'muzmmal.khan99@gmail.com', phone: 'muzammal.frames', name: 'Muzammal Khan', role: 'admin' } });
-      } else {
-        return res.status(401).json({ error: "Invalid admin credentials" });
-      }
+      return res.status(401).json({ error: "Admin login is only allowed via 'Continue with Google' button. Please use your Google Account." });
     }
 
     const user = db.users.find(u => (u.phone === phone || u.email === phone) && u.password === password);
