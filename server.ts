@@ -259,34 +259,36 @@ async function startServer() {
     let user = db.users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
     
     if (!user) {
-      // Register new user from Google
-      const newUserId = `CLI-${Math.floor(100 + Math.random() * 900)}`;
+      let existingClient = db.clients.find((c: any) => c.email.toLowerCase() === email.toLowerCase());
+      const newUserId = existingClient ? existingClient.id : `CLI-${Math.floor(100 + Math.random() * 900)}`;
       user = {
         id: newUserId,
         email,
-        password: Math.random().toString(36).slice(-8), // Random fallback password
-        name: name || email.split('@')[0],
+        password: Math.random().toString(36).slice(-8),
+        name: existingClient ? existingClient.name : (name || email.split('@')[0]),
         role: 'client'
       };
       db.users.push(user);
       pushToSupabase('users', user);
       
-      const newClient = {
-        id: newUserId,
-        name: user.name,
-        email: user.email,
-        phone: 'Not provided',
-        location: 'Unknown',
-        eventName: 'Pending Booking',
-        eventType: 'Unknown',
-        eventDate: 'Not Scheduled',
-        package: 'Pending Selection',
-        status: 'active',
-        totalAmount: 0,
-        paidAmount: 0
-      };
-      db.clients.push(newClient);
-      pushToSupabase('clients', newClient);
+      if (!existingClient) {
+        const newClient = {
+          id: newUserId,
+          name: user.name,
+          email: user.email,
+          phone: 'Not provided',
+          location: 'Unknown',
+          eventName: 'Pending Booking',
+          eventType: 'Unknown',
+          eventDate: 'Not Scheduled',
+          package: 'Pending Selection',
+          status: 'active',
+          totalAmount: 0,
+          paidAmount: 0
+        };
+        db.clients.push(newClient);
+        pushToSupabase('clients', newClient);
+      }
 
       const activity = {
         id: `ACT-${Date.now()}`,
@@ -324,25 +326,60 @@ async function startServer() {
 
   app.get("/api/clients", (req, res) => res.json(db.clients));
   app.post("/api/clients", async (req, res) => {
+    const existing = db.clients.find(c => c.email.toLowerCase() === req.body.email.toLowerCase());
+    if (existing) {
+        return res.status(400).json({ error: "A client with this email already exists." });
+    }
     db.clients.push(req.body);
     saveDb();
     pushToSupabase('clients', req.body);
     res.json(req.body);
   });
   app.delete("/api/clients/:id", async (req, res) => {
+    const client = db.clients.find(c => c.id === req.params.id);
+    if (!client) return res.status(404).json({ error: "Not found" });
+    
     db.clients = db.clients.filter(c => c.id !== req.params.id);
+    db.events = db.events.filter(e => e.clientName !== client.name);
+    db.payments = db.payments.filter(p => p.clientName !== client.name);
+    db.playlists = db.playlists.filter(p => p.clientId !== client.id);
+    
     saveDb();
     deleteFromSupabase('clients', req.params.id);
     res.json({ success: true });
   });
   app.put("/api/clients/:id", async (req, res) => {
+    const oldClient = db.clients.find(c => c.id === req.params.id);
+    if (!oldClient) return res.status(404).json({ error: "Not found" });
+    
+    const newName = req.body.name;
+    const nameChanged = newName && oldClient.name !== newName;
+    
     db.clients = db.clients.map(c => c.id === req.params.id ? { ...c, ...req.body } : c);
+    
+    if (nameChanged) {
+      db.events = db.events.map(e => e.clientName === oldClient.name ? { ...e, clientName: newName } : e);
+      db.payments = db.payments.map(p => p.clientName === oldClient.name ? { ...p, clientName: newName } : p);
+    }
+    
     saveDb();
     const updated = db.clients.find(c => c.id === req.params.id);
     if (updated) pushToSupabase('clients', updated);
     res.json({ success: true });
   });
 
+  app.delete("/api/events/:id", async (req, res) => {
+    db.events = db.events.filter(e => e.id !== req.params.id);
+    saveDb();
+    deleteFromSupabase('events', req.params.id);
+    res.json({ success: true });
+  });
+  app.delete("/api/payments/:id", async (req, res) => {
+    db.payments = db.payments.filter(p => p.id !== req.params.id);
+    saveDb();
+    deleteFromSupabase('payments', req.params.id);
+    res.json({ success: true });
+  });
   app.get("/api/events", (req, res) => res.json(db.events));
   app.post("/api/events", async (req, res) => {
     db.events.push(req.body);

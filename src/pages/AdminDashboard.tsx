@@ -178,6 +178,10 @@ export function AdminDashboard() {
   const [toastMsg, setToastMsg] = useState('');
 
   // Modals
+    const [showEditClient, setShowEditClient] = useState(false);
+  const [editingClient, setEditingClient] = useState<any>(null);
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
   const [showAddClient, setShowAddClient] = useState(false);
   const [newClient, setNewClient] = useState({ 
     name: '', 
@@ -292,6 +296,46 @@ export function AdminDashboard() {
     setTimeout(() => setToastMsg(''), 3500);
   };
 
+    const handleEditClientSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+    const tot = parseInt(editingClient.totalAmount) || 0;
+    const paid = parseInt(editingClient.paidAmount) || 0;
+    const updated = { ...editingClient, totalAmount: tot, paidAmount: paid };
+    
+    await fetch(`/api/clients/${updated.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated)
+    });
+    
+    const [freshClients, freshEvents, freshPayments] = await Promise.all([
+      fetch('/api/clients').then(res => res.json()),
+      fetch('/api/events').then(res => res.json()),
+      fetch('/api/payments').then(res => res.json())
+    ]);
+    setClients(freshClients);
+    setEvents(freshEvents);
+    setPayments(freshPayments);
+    
+    setShowEditClient(false);
+    triggerToast('Client account updated successfully.');
+  };
+
+    const handleEditEventSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+    
+    await fetch(`/api/events/${editingEvent.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editingEvent)
+    });
+    setEvents(events.map(ev => ev.id === editingEvent.id ? editingEvent : ev));
+    setShowEditEvent(false);
+    triggerToast('Event details updated successfully.');
+  };
+
   const handleAddClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClient.name || !newClient.email) return;
@@ -326,11 +370,17 @@ export function AdminDashboard() {
       deliverablesCount: 0
     };
 
-    await fetch('/api/clients', {
+    const clientRes = await fetch('/api/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(created)
     });
+    
+    if (!clientRes.ok) {
+        const errorData = await clientRes.json();
+        alert(errorData.error || "Failed to add client");
+        return;
+    }
 
     await fetch('/api/events', {
       method: 'POST',
@@ -366,7 +416,16 @@ export function AdminDashboard() {
 
   const handleDeleteClient = async (id: string) => {
     await fetch(`/api/clients/${id}`, { method: 'DELETE' });
-    setClients(clients.filter(c => c.id !== id));
+    
+    const [freshClients, freshEvents, freshPayments] = await Promise.all([
+      fetch('/api/clients').then(res => res.json()),
+      fetch('/api/events').then(res => res.json()),
+      fetch('/api/payments').then(res => res.json())
+    ]);
+    setClients(freshClients);
+    setEvents(freshEvents);
+    setPayments(freshPayments);
+    
     triggerToast('Client account & associated timelines removed.');
   };
 
@@ -800,8 +859,12 @@ export function AdminDashboard() {
                 <tbody className="divide-y divide-white/10 text-sm">
                   {filteredClients.map((client) => {
                     const remaining = Math.max(0, client.totalAmount - client.paidAmount);
-                    const percentPaid = Math.min(100, Math.round((client.paidAmount / client.totalAmount) * 100));
-                    const countdown = calculateCountdown(client.eventDate);
+                    const percentPaid = Math.min(100, Math.round((client.paidAmount / client.totalAmount) * 100) || 0);
+                    
+                    const clientEventsList = events.filter(e => e.clientName === client.name);
+                    const displayEventName = clientEventsList.length > 0 ? (clientEventsList.length === 1 ? clientEventsList[0].eventName : `${clientEventsList.length} Events Booked`) : client.eventName;
+                    const displayEventDate = clientEventsList.length > 0 ? clientEventsList.map(e => e.date).sort()[0] : client.eventDate;
+                    const countdown = calculateCountdown(displayEventDate);
 
                     return (
                       <tr key={client.id} className="hover:bg-white/[0.03] transition-colors">
@@ -817,12 +880,11 @@ export function AdminDashboard() {
                             <MapPin className="w-3 h-3" /> {client.location || 'Location Not Provided'}
                           </div>
                         </td>
-
                         <td className="py-4 px-6">
-                          <div className="font-medium text-white">{client.eventName}</div>
+                          <div className="font-medium text-white">{displayEventName}</div>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[#f2a900] text-xs flex items-center gap-1 font-mono">
-                              <Calendar className="w-3 h-3" /> {client.eventDate}
+                              <Calendar className="w-3 h-3" /> {displayEventDate}
                             </span>
                             <span className="bg-white/10 text-white/80 text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
                               <Clock className="w-2.5 h-2.5 text-[#f2a900]" /> {countdown}
@@ -943,7 +1005,12 @@ export function AdminDashboard() {
               <div key={evt.id} className="bg-zinc-900/90 border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-[#f2a900]/50 transition-all shadow-xl space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="bg-white/10 text-white font-mono text-[10px] px-2.5 py-1 rounded font-bold">{evt.id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-white/10 text-white font-mono text-[10px] px-2.5 py-1 rounded font-bold">{evt.id}</span>
+                      <button onClick={() => { setEditingEvent(evt); setShowEditEvent(true); }} className="p-1 rounded bg-white/5 hover:bg-[#f2a900] hover:text-black transition-colors text-white/60">
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                     <span className="bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full">
                       {evt.eventType || 'Wedding'}
                     </span>
@@ -1382,6 +1449,98 @@ export function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* EDIT EVENT MODAL */}
+      <AnimatePresence>
+        {showEditEvent && editingEvent && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-6 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-zinc-900 border border-white/20 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative my-8"
+            >
+              <h2 className="font-serif text-2xl font-medium text-white mb-6">Edit Event Details</h2>
+              <form onSubmit={handleEditEventSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Event Name</label>
+                  <input type="text" required value={editingEvent.eventName} onChange={(e) => setEditingEvent({ ...editingEvent, eventName: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Date</label>
+                    <input type="date" required value={editingEvent.date} onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900] [color-scheme:dark]" />
+                  </div>
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Team Lead</label>
+                    <input type="text" value={editingEvent.teamLead} onChange={(e) => setEditingEvent({ ...editingEvent, teamLead: e.target.value })} placeholder="e.g. Muzammal Khan" className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Venue</label>
+                  <input type="text" required value={editingEvent.venue} onChange={(e) => setEditingEvent({ ...editingEvent, venue: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                </div>
+                <div>
+                  <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Package Details</label>
+                  <input type="text" required value={editingEvent.packageDetails} onChange={(e) => setEditingEvent({ ...editingEvent, packageDetails: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                </div>
+                
+                <div className="flex items-center gap-3 pt-4">
+                  <button type="button" onClick={() => setShowEditEvent(false)} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/70 font-semibold text-sm hover:bg-white/5 transition-colors">Cancel</button>
+                  <button type="submit" className="flex-1 bg-[#f2a900] hover:bg-white text-black font-bold text-sm py-3 px-4 rounded-xl transition-colors shadow-lg shadow-[#f2a900]/20">Save Changes</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT CLIENT MODAL */}
+      <AnimatePresence>
+        {showEditClient && editingClient && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-6 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-zinc-900 border border-white/20 rounded-3xl p-8 max-w-lg w-full shadow-2xl relative my-8"
+            >
+              <h2 className="font-serif text-2xl font-medium text-white mb-6">Edit Client Account</h2>
+              <form onSubmit={handleEditClientSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Client Full Names</label>
+                  <input type="text" required value={editingClient.name} onChange={(e) => setEditingClient({ ...editingClient, name: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Email Address</label>
+                    <input type="email" required value={editingClient.email} onChange={(e) => setEditingClient({ ...editingClient, email: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                  </div>
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Phone Number</label>
+                    <input type="text" value={editingClient.phone} onChange={(e) => setEditingClient({ ...editingClient, phone: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Total Amount (Rs)</label>
+                    <input type="number" required value={editingClient.totalAmount} onChange={(e) => setEditingClient({ ...editingClient, totalAmount: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                  </div>
+                  <div>
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Paid Amount (Rs)</label>
+                    <input type="number" required value={editingClient.paidAmount} onChange={(e) => setEditingClient({ ...editingClient, paidAmount: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 pt-4">
+                  <button type="button" onClick={() => setShowEditClient(false)} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/70 font-semibold text-sm hover:bg-white/5 transition-colors">Cancel</button>
+                  <button type="submit" className="flex-1 bg-[#f2a900] hover:bg-white text-black font-bold text-sm py-3 px-4 rounded-xl transition-colors shadow-lg shadow-[#f2a900]/20">Save Changes</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* MODAL 1: ADD CLIENT ACCOUNT */}
       <AnimatePresence>

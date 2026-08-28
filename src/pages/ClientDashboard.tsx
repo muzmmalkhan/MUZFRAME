@@ -324,13 +324,29 @@ export function ClientDashboard() {
     try {
       const clientName = user?.name || clientData?.name || 'Unknown Client';
       
-      await Promise.all(selectedEvents.map((ev, idx) => {
+      const isFirstBooking = !clientEvents || clientEvents.length === 0;
+      
+      // Update the client package if this is their first booking
+      if (isFirstBooking && clientData) {
+        const updatedClient = {
+          ...clientData,
+          package: bookingPackage === 'Custom Quote' ? `Custom Quote (Budget: Rs. ${bookingBudget})` : bookingPackage,
+          eventName: `${clientName}'s ${selectedEvents[0].type === 'Other' ? selectedEvents[0].customType : selectedEvents[0].type}`,
+          eventType: selectedEvents[0].type === 'Other' ? selectedEvents[0].customType : selectedEvents[0].type,
+          eventDate: selectedEvents[0].date
+        };
+        fetch(`/api/clients/${clientData.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedClient)
+        });
+        setClientData(updatedClient);
+      }
+
+      const newEventsData = selectedEvents.map((ev, idx) => {
         const typeName = ev.type === 'Other' ? ev.customType : ev.type;
         const loc = ev.type === 'Barat' ? `${ev.startLocation} to ${ev.endLocation}` : ev.startLocation;
-        return fetch('/api/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        return {
             id: `EVT-${Date.now()}-${idx}`,
             clientName: clientName,
             eventName: `${clientName}'s ${typeName}`,
@@ -341,10 +357,19 @@ export function ClientDashboard() {
             packageDetails: (bookingPackage === 'Custom Quote' ? `Custom Quote (Budget: Rs. ${bookingBudget})` : bookingPackage) + (bookingSongs ? ` | Notes: ${bookingSongs}` : ''),
             status: 'Upcoming',
             deliverablesCount: 0
-          })
+        };
+      });
+      
+      setClientEvents([...(clientEvents || []), ...newEventsData]);
+
+      await Promise.all(newEventsData.map((evt) => {
+        return fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(evt)
         });
       }));
-      
+
       // WhatsApp redirection
       const adminPhone = "923006103262";
       let eventsText = '';
