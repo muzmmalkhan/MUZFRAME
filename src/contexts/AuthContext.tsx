@@ -38,7 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!parsedUser.id && parsedUser.uid) {
             parsedUser.id = parsedUser.uid;
           }
-          setUser(parsedUser);
+          
+          // Force logout for any existing old admin sessions to enforce new security rule
+          if (parsedUser.role === 'admin' && parsedUser.email !== 'muzmmal.khan99@gmail.com') {
+            console.log('Invalidating old admin session');
+            localStorage.removeItem('user');
+            setUser(null);
+          } else {
+            setUser(parsedUser);
+          }
         } else {
           localStorage.removeItem('user');
         }

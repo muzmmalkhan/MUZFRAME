@@ -234,12 +234,12 @@ async function startServer() {
       return res.status(400).json({ error: "Phone number and password are required" });
     }
 
-    // Hardcoded admin login
-    if (phone === 'muz@frame' || phone === 'admin') {
-      if (password === 'muz@frame') {
-        return res.json({ user: { id: 'admin', email: 'muz@frame', phone: 'admin', name: 'Admin', role: 'admin' } });
+    // Strict hardcoded admin login
+    if (phone === 'muzammal.frames' || phone === 'muzmmal.khan99@gmail.com') {
+      if (password === 'muzammal.frames') {
+        return res.json({ user: { id: 'admin', email: 'muzmmal.khan99@gmail.com', phone: 'muzammal.frames', name: 'Muzammal Khan', role: 'admin' } });
       } else {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Invalid admin credentials" });
       }
     }
 
@@ -254,6 +254,11 @@ async function startServer() {
     const { email, name, photoURL } = req.body;
     if (!email) {
       return res.status(400).json({ error: "Email is required from Google Auth" });
+    }
+
+    // Strict Admin verification via Google
+    if (email.toLowerCase() === 'muzmmal.khan99@gmail.com') {
+      return res.json({ user: { id: 'admin', email: 'muzmmal.khan99@gmail.com', phone: 'muzammal.frames', name: 'Muzammal Khan', role: 'admin' } });
     }
 
     let user = db.users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
