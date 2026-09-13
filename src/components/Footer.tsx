@@ -59,18 +59,14 @@ export function Footer() {
              </li>
              <li className="flex items-center gap-3 text-white/60">
                <Mail className="w-5 h-5 text-[#f2a900]" />
-               <span className="text-sm">info@muzframe.com</span>
+               <a href="mailto:muzammal.khan99@gmail.com" className="text-sm hover:text-[#f2a900] transition-colors">muzammal.khan99@gmail.com</a>
              </li>
            </ul>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p className="text-white/40 text-sm">© {new Date().getFullYear()} MuzFrame Studio. All rights reserved.</p>
-        <div className="flex gap-6 text-sm text-white/40">
-          <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-        </div>
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-center items-center gap-4">
+        <p className="text-white/40 text-sm text-center">© {new Date().getFullYear()} MuzFrame Studio. All rights reserved.</p>
       </div>
     </footer>
   );

@@ -40,7 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           
           // Force logout for any existing old admin sessions to enforce new security rule
-          if (parsedUser.role === 'admin' && parsedUser.email !== 'muzmmal.khan99@gmail.com') {
+          const isAllowedAdmin = parsedUser.email === 'muzammal.khan99@gmail.com' || parsedUser.email === 'muzmmal.khan99@gmail.com';
+          if (parsedUser.role === 'admin' && !isAllowedAdmin) {
             console.log('Invalidating old admin session');
             localStorage.removeItem('user');
             setUser(null);
@@ -97,8 +98,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const changePassword = async (newPassword: string) => {
-    // For local / demo auth session, we confirm successful password update
-    console.log('Password updated successfully for current session');
+    if (!user) throw new Error("Not authenticated");
+    const response = await fetch('/api/auth/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, newPassword })
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to update password");
+    }
   };
 
   const updateProfile = (updatedData: Partial<User>) => {

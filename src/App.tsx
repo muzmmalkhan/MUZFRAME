@@ -29,7 +29,8 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
   }
 
   // Strict check for admin area
-  if (requiredRole === 'admin' && (user.role !== 'admin' || user.email !== 'muzmmal.khan99@gmail.com')) {
+  const isAdminEmail = user.email === 'muzammal.khan99@gmail.com' || user.email === 'muzmmal.khan99@gmail.com';
+  if (requiredRole === 'admin' && (user.role !== 'admin' || !isAdminEmail)) {
     return <Navigate to="/" replace />;
   }
   

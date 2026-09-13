@@ -32,7 +32,12 @@ export function Login() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get('redirect');
+      
+      if (redirect) {
+        navigate('/' + redirect);
+      } else if (user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/client/' + user.id);
@@ -259,7 +264,10 @@ export function Login() {
                 type="text" 
                 placeholder="Phone Number (e.g. 03001234567)" 
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setPhone(val);
+                }}
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]/60 transition-colors text-sm"
               />

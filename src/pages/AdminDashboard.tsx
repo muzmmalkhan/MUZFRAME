@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, 
+  Users,
+  TrendingUp,
+  Activity,
+  AlertCircle,
+  CheckSquare, 
   Calendar, 
   CreditCard, 
   Image as ImageIcon, 
@@ -30,7 +34,8 @@ import {
   ListPlus,
   Check,
   Disc,
-  MapPin
+  MapPin,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -155,7 +160,7 @@ export function AdminDashboard() {
     }
   }, [user, navigate]);
 
-  const [activeTab, setActiveTab] = useState<'clients' | 'events' | 'payments' | 'songs' | 'gallery' | 'notifications'>('clients');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'clients' | 'events' | 'payments' | 'songs' | 'gallery' | 'notifications' | 'activities' | 'quotes'>('analytics');
   const [searchTerm, setSearchTerm] = useState('');
 
   // States
@@ -165,6 +170,7 @@ export function AdminDashboard() {
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
   const [playlists, setPlaylists] = useState<ClientPlaylist[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
+  const [quotes, setQuotes] = useState<any[]>([]);
   const [blockedDates, setBlockedDates] = useState<{id: string, date: string, reason: string}[]>([]);
   const [newBlockedDate, setNewBlockedDate] = useState('');
   const [newBlockedReason, setNewBlockedReason] = useState('');
@@ -717,7 +723,7 @@ export function AdminDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="bg-[#f2a900] text-black text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Executive Control Center</span>
-              <span className="text-white/50 text-xs font-mono">Logged in as: {user?.email || 'muzmmal.khan99@gmail.com'}</span>
+              <span className="text-white/50 text-xs font-mono">Logged in as: {user?.email || 'muzammal.khan99@gmail.com'}</span>
             </div>
             <div className="flex items-center gap-4"><img src="/logo.png" alt="Logo" className="h-12 w-auto object-contain" /><h1 className="font-serif text-3xl md:text-4xl font-medium text-white">Console</h1></div>
             <p className="text-white/60 text-sm mt-1">Full real-time administration of clients, timelines, finances, and song selections.</p>
@@ -743,6 +749,21 @@ export function AdminDashboard() {
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-8">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/10">
+
+          <button 
+            onClick={() => setActiveTab('quotes')}
+            className={`px-5 py-3 rounded-xl font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-all flex-shrink-0 ${activeTab === 'quotes' ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20 font-bold' : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'}`}
+          >
+            <MessageSquare className="w-4 h-4" /> Quotes
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('analytics')}
+            className={`px-5 py-3 rounded-xl font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-all flex-shrink-0 ${activeTab === 'analytics' ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20 font-bold' : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'}`}
+          >
+            <TrendingUp className="w-4 h-4" /> Studio Analytics & Intelligence
+          </button>
+
           <button 
             onClick={() => setActiveTab('clients')}
             className={`px-5 py-3 rounded-xl font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-all flex-shrink-0 ${activeTab === 'clients' ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20 font-bold' : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'}`}
@@ -793,6 +814,169 @@ export function AdminDashboard() {
           </button>
         </div>
       </div>
+
+      
+      {/* TAB: ANALYTICS & INTELLIGENCE */}
+      {activeTab === 'analytics' && (
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-zinc-900/80 border border-white/10 p-6 rounded-3xl shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white/60 text-xs font-bold uppercase tracking-widest">Total Revenue</h3>
+                <div className="bg-[#f2a900]/20 text-[#f2a900] p-2 rounded-lg"><DollarSign className="w-4 h-4" /></div>
+              </div>
+              <p className="text-3xl font-serif text-white font-medium">Rs. {totalRevenue.toLocaleString()}</p>
+              <p className="text-[#f2a900] text-[10px] uppercase tracking-wider mt-2 font-bold">+Lifetime Earnings</p>
+            </div>
+            
+            <div className="bg-zinc-900/80 border border-white/10 p-6 rounded-3xl shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white/60 text-xs font-bold uppercase tracking-widest">Pending Receivables</h3>
+                <div className="bg-red-500/20 text-red-500 p-2 rounded-lg"><AlertCircle className="w-4 h-4" /></div>
+              </div>
+              <p className="text-3xl font-serif text-white font-medium">Rs. {totalReceivables.toLocaleString()}</p>
+              <p className="text-red-400 text-[10px] uppercase tracking-wider mt-2 font-bold">Requires Follow-up</p>
+            </div>
+            
+            <div className="bg-zinc-900/80 border border-white/10 p-6 rounded-3xl shadow-xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <h3 className="text-white/60 text-xs font-bold uppercase tracking-widest">Active Pipeline</h3>
+                <div className="bg-blue-500/20 text-blue-500 p-2 rounded-lg"><Calendar className="w-4 h-4" /></div>
+              </div>
+              <p className="text-3xl font-serif text-white font-medium relative z-10">{events.filter(e => e.status !== 'Delivered').length}</p>
+              <p className="text-blue-400 text-[10px] uppercase tracking-wider mt-2 font-bold relative z-10">Total Pipeline Events</p>
+              
+              {/* Powerful Feature: Dynamic Revenue Pipeline Calculation */}
+              <div className="mt-4 pt-4 border-t border-white/10 relative z-10">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-white/60">Expected Inflow</span>
+                  <span className="text-green-400 font-bold">
+                    Rs. {clients.filter(c => events.some(e => e.clientName === c.name && e.status !== 'Delivered')).reduce((acc, c) => acc + (c.totalAmount - c.paidAmount), 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/80 border border-white/10 p-6 rounded-3xl shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white/60 text-xs font-bold uppercase tracking-widest">Client Base</h3>
+                <div className="bg-purple-500/20 text-purple-500 p-2 rounded-lg"><Users className="w-4 h-4" /></div>
+              </div>
+              <p className="text-3xl font-serif text-white font-medium">{clients.length}</p>
+              <p className="text-purple-400 text-[10px] uppercase tracking-wider mt-2 font-bold">Total Registered</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-zinc-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-serif text-xl font-medium text-white flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-[#f2a900]" /> Intelligence & Action Items
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {clients.filter(c => c.totalAmount - c.paidAmount > 0).slice(0, 3).map(client => (
+                  <div key={'warn-'+client.id} className="bg-black/40 border border-red-500/20 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4 text-red-500" /> Pending Payment: {client.name}</h4>
+                      <p className="text-white/50 text-xs mt-1">Balance of Rs. {(client.totalAmount - client.paidAmount).toLocaleString()} is pending.</p>
+                    </div>
+                    <button onClick={() => setActiveTab('clients')} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors">Resolve</button>
+                  </div>
+                ))}
+
+                {events.filter(e => e.status === 'Upcoming').slice(0, 3).map(ev => {
+                  const targetDate = new Date(ev.date).getTime();
+                  const now = new Date().getTime();
+                  const diff = targetDate - now;
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  if (days >= 0 && days <= 7) {
+                    return (
+                      <div key={'urg-'+ev.id} className="bg-black/40 border border-[#f2a900]/20 p-4 rounded-2xl flex items-center justify-between">
+                        <div>
+                          <h4 className="text-white font-medium text-sm flex items-center gap-2"><Clock className="w-4 h-4 text-[#f2a900]" /> Upcoming Event: {ev.eventName}</h4>
+                          <p className="text-white/50 text-xs mt-1">Event is in {days} days. Ensure team lead ({ev.teamLead}) is ready.</p>
+                        </div>
+                        <button onClick={() => setActiveTab('events')} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors">Manage</button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+
+                {events.filter(e => e.status === 'Editing' || e.status === 'Color Grading').slice(0, 3).map(ev => (
+                  <div key={'prog-'+ev.id} className="bg-black/40 border border-blue-500/20 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium text-sm flex items-center gap-2"><CheckSquare className="w-4 h-4 text-blue-500" /> In Post-Production: {ev.eventName}</h4>
+                      <p className="text-white/50 text-xs mt-1">Currently in {ev.status} phase.</p>
+                    </div>
+                    <button onClick={() => setActiveTab('events')} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors">Update</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+              <h2 className="font-serif text-xl font-medium text-white mb-6 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#f2a900]" /> Latest Activity
+              </h2>
+              <div className="space-y-4">
+                {activities.slice(0, 5).map(act => (
+                  <div key={act.id} className="border-l-2 border-[#f2a900]/30 pl-4 pb-4 last:pb-0 relative">
+                    <div className="absolute w-2 h-2 rounded-full bg-[#f2a900] -left-[5px] top-1.5" />
+                    <p className="text-white text-sm font-medium">{act.clientName}</p>
+                    <p className="text-white/60 text-xs mt-0.5">{act.description}</p>
+                    <p className="text-white/40 text-[10px] mt-1 uppercase tracking-widest">{new Date(act.timestamp).toLocaleDateString()}</p>
+                  </div>
+                ))}
+                {activities.length === 0 && <p className="text-white/40 text-xs italic">No recent activity detected.</p>}
+              </div>
+              <button onClick={() => setActiveTab('activities')} className="w-full mt-6 py-3 border border-white/10 hover:border-[#f2a900]/50 rounded-xl text-xs font-bold uppercase tracking-widest text-white/70 hover:text-[#f2a900] transition-colors">View All Logs</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      
+      {/* TAB: QUOTES */}
+      {activeTab === 'quotes' && (
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+            <h2 className="font-serif text-2xl font-medium text-white mb-6 flex items-center gap-2">
+              <MessageSquare className="w-6 h-6 text-[#f2a900]" /> Custom Quote Requests
+            </h2>
+            <div className="space-y-4">
+              {quotes.map((q: any) => (
+                <div key={q.id} className="bg-black/50 border border-white/10 p-6 rounded-2xl flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+                  <div>
+                    <h3 className="text-[#f2a900] font-bold uppercase tracking-wider text-sm mb-1">{q.clientName} ({q.clientPhone})</h3>
+                    <p className="text-white/80 text-sm mb-2">Requested a quote on {new Date(q.timestamp).toLocaleDateString()}</p>
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Days: <strong className="text-white">{q.days}</strong></span>
+                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Cameras: <strong className="text-white">{q.cameras || 1}</strong></span>
+                      {q.canvas && q.canvas !== "None" && <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Canvas: <strong className="text-white">{q.canvas}</strong></span>}
+                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Venue: <strong className="text-white">{q.venue}</strong></span>
+                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Delivery: <strong className="text-white">{q.delivery || 'Cloud'}</strong></span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white/50 text-xs uppercase tracking-widest mb-1">Estimated Value</p>
+                    <p className="text-3xl font-serif text-white">Rs. {q.estimatedPrice.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+              {quotes.length === 0 && (
+                <div className="text-center py-12 border border-white/10 border-dashed rounded-2xl">
+                  <p className="text-white/50">No custom quotes requested yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* TAB: ACTIVITIES */}
       {activeTab === 'activities' && (

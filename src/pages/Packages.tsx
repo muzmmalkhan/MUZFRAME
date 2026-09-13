@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { QuickCalculator } from '../components/QuickCalculator';
 import { useAuth } from '../contexts/AuthContext';
 
 const PRICING = [
@@ -44,11 +45,7 @@ export function Packages() {
   const navigate = useNavigate();
 
   const handleBook = () => {
-    if (user) {
-      navigate('/contact');
-    } else {
-      navigate('/login');
-    }
+    navigate('/contact');
   };
 
   return (
@@ -108,13 +105,7 @@ export function Packages() {
           ))}
         </div>
 
-        <div className="mt-20 max-w-3xl mx-auto glass-panel p-8 rounded-2xl flex items-start gap-4 border-l-4 border-l-[#f2a900]">
-          <Info className="w-6 h-6 text-[#f2a900] flex-shrink-0 mt-1" />
-          <p className="text-white/70 text-sm leading-relaxed">
-            <strong className="text-white block mb-1">Looking for a custom quote?</strong>
-            We understand every event is unique. If you require specialized drone coverage, extended days, or specific album designs, please contact us directly for a customized proposal that fits your exact needs.
-          </p>
-        </div>
+        <QuickCalculator />
       </div>
     </div>
   );

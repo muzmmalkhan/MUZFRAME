@@ -225,7 +225,7 @@ export function Contact() {
                </div>
                <div>
                   <h4 className="text-white uppercase tracking-widest text-xs font-bold mb-1">Email Inquiry</h4>
-                  <p className="text-white/60 font-serif text-xl">booking@muzframe.studio</p>
+                  <a href="mailto:muzammal.khan99@gmail.com" className="text-white/60 hover:text-[#f2a900] font-serif text-xl transition-colors">muzammal.khan99@gmail.com</a>
                </div>
             </div>
             

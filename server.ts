@@ -47,7 +47,8 @@ let db = {
   payments: [] as any[],
   notifications: [] as any[],
   playlists: [] as any[],
-  activities: [] as any[],
+  activities: [],
+    quotes: [] as any[],
   blockedDates: [] as any[]
 };
 
@@ -234,7 +235,7 @@ async function startServer() {
       return res.status(400).json({ error: "Phone number and password are required" });
     }
 
-    if (phone === 'muzammal.frames' || phone === 'muzmmal.khan99@gmail.com') {
+    if (phone === 'muzammal.frames' || phone === 'muzammal.khan99@gmail.com' || phone === 'muzmmal.khan99@gmail.com') {
       return res.status(401).json({ error: "Admin login is only allowed via 'Continue with Google' button. Please use your Google Account." });
     }
 
@@ -252,8 +253,8 @@ async function startServer() {
     }
 
     // Strict Admin verification via Google
-    if (email.toLowerCase() === 'muzmmal.khan99@gmail.com') {
-      return res.json({ user: { id: 'admin', email: 'muzmmal.khan99@gmail.com', phone: 'muzammal.frames', name: 'Muzammal Khan', role: 'admin' } });
+    if (email.toLowerCase() === 'muzammal.khan99@gmail.com' || email.toLowerCase() === 'muzmmal.khan99@gmail.com') {
+      return res.json({ user: { id: 'admin', email: 'muzammal.khan99@gmail.com', phone: 'muzammal.frames', name: 'Muzammal Khan', role: 'admin' } });
     }
 
     let user = db.users.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
@@ -321,6 +322,21 @@ async function startServer() {
   app.delete("/api/blocked-dates/:id", (req, res) => {
     db.blockedDates = db.blockedDates.filter(b => b.id !== req.params.id);
     saveDb();
+    res.json({ success: true });
+  });
+
+  app.put("/api/auth/password", async (req, res) => {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: "Email and a valid new password are required" });
+    }
+    const userIndex = db.users.findIndex((u: any) => u.email.toLowerCase() === email.toLowerCase());
+    if (userIndex === -1) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    db.users[userIndex].password = newPassword;
+    saveDb();
+    pushToSupabase('users', db.users[userIndex]);
     res.json({ success: true });
   });
 
@@ -446,6 +462,26 @@ async function startServer() {
 
     saveDb();
     res.json(req.body);
+  });
+
+  
+  // Quotes API
+  app.get("/api/quotes", (req, res) => res.json(db.quotes || []));
+  app.post("/api/quotes", async (req, res) => {
+    const quote = { id: Date.now().toString(), timestamp: new Date().toISOString(), ...req.body };
+    db.quotes = db.quotes || [];
+    db.quotes.push(quote);
+    
+    // Also add an activity for this
+    db.activities.push({
+      id: Date.now().toString() + "-act",
+      timestamp: new Date().toISOString(),
+      clientName: quote.clientName,
+      description: "Requested a custom quote (Estimated: Rs. " + quote.estimatedPrice.toLocaleString() + ")"
+    });
+    
+    saveDb();
+    res.json(quote);
   });
 
   app.get("/api/activities", (req, res) => res.json(db.activities));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, MapPin,  Share2, Heart, Image as ImageIcon, Loader2, LogOut, Lock, Calendar, CheckCircle2, Clock, ShieldCheck, User, Video, FileText, Sparkles, Key, Music, Play, Pause, ListMusic } from 'lucide-react';
+import { Download, MapPin,  Share2, Heart, Image as ImageIcon, Loader2, LogOut, Lock, Calendar, CheckCircle2, Clock, ShieldCheck, User, Video, FileText, Sparkles, Key, Music, Play, Pause, ListMusic, Search, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,9 +21,63 @@ const VIDEOS = [
   { id: '2', title: 'Full Barat Ceremony Reel', duration: '12:30', thumb: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop' }
 ];
 
+export interface ClientSong {
+  id: string;
+  title: string;
+  artist: string;
+  category: 'Mehndi Songs' | 'Barat Songs' | 'Walima Songs' | 'Others';
+  duration: string;
+  previewUrl: string;
+  tagline?: string;
+}
+
+const SONG_CATEGORIES: { id: 'All' | 'Mehndi Songs' | 'Barat Songs' | 'Walima Songs' | 'Others'; label: string; desc: string; icon: string; badgeColor: string }[] = [
+  { id: 'Mehndi Songs', label: 'Mehndi Songs', desc: 'Festive Dholak, Sangeet & High-Energy Celebration Tracks', icon: '🌼', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+  { id: 'Barat Songs', label: 'Barat Songs', desc: 'Grand Dulha & Bride Entrance, Emotional Rukhsati & Vows', icon: '🎺', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40' },
+  { id: 'Walima Songs', label: 'Walima Songs', desc: 'Reception Atmosphere, Romantic Couple Stage & First Dance', icon: '✨', badgeColor: 'bg-[#f2a900]/20 text-[#f2a900] border-[#f2a900]/40' },
+  { id: 'Others', label: 'Others', desc: 'Cinematic Highlights, Teaser Music & Emotional Background Scores', icon: '🎵', badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/40' }
+];
+
+const CLIENT_SONGS_LIST: ClientSong[] = [
+  // 1. MEHNDI SONGS (FIRST)
+  { id: 'MHD-001', title: 'Nachde Ne Saare', artist: 'Jasleen Royal, Harshdeep Kaur', category: 'Mehndi Songs', duration: '3:15', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/21/bf/11/21bf117c-744b-db9d-06f2-f1f5c87fb998/mzaf_7994364603410990968.plus.aac.p.m4a', tagline: 'Dholki & Group Dance' },
+  { id: 'MHD-002', title: 'London Thumakda', artist: 'Labh Janjua, Sonu Kakkar', category: 'Mehndi Songs', duration: '3:50', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b2/a9/5c/b2a95c7c-45d9-5402-097c-8914231cfc0b/mzaf_11470489494488922036.plus.aac.p.m4a', tagline: 'Upbeat Sangeet Celebration' },
+  { id: 'MHD-003', title: 'Luddi Hai Jamalo', artist: 'Ali Sethi & Humaira Arshad', category: 'Mehndi Songs', duration: '3:45', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview118/v4/a3/35/0e/a3350ef0-0be9-293a-4ec3-8877acb4ae65/mzaf_1893472275867306424.plus.aac.p.m4a', tagline: 'Traditional Mehndi Beat' },
+  { id: 'MHD-004', title: 'Galla Goriyan', artist: 'Kanika Kapoor, Mika Singh', category: 'Mehndi Songs', duration: '3:20', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ff/92/e7/ff92e77e-e631-2c22-e8fb-87c10ff42a01/mzaf_3559705285033933426.plus.aac.p.m4a', tagline: 'High Energy Mehndi' },
+  { id: 'MHD-005', title: 'Billo Hai', artist: 'Sahara & Manj Musik', category: 'Mehndi Songs', duration: '3:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/73/a1/fd/73a1fd04-ffc4-3678-12fd-8e2ce97356c5/mzaf_2445518110460654640.plus.aac.p.m4a', tagline: 'Bhangra & Mehndi Party' },
+  { id: 'SNG-024', title: 'Saiyan Dil Mein Aana Re', artist: 'Shamshad Begum', category: 'Mehndi Songs', duration: '3:20', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/21/bf/11/21bf117c-744b-db9d-06f2-f1f5c87fb998/mzaf_7994364603410990968.plus.aac.p.m4a', tagline: 'Classic Retro Mehndi' },
+
+  // 2. BARAT SONGS (SECOND)
+  { id: 'BRT-001', title: 'Din Shagna Da', artist: 'Jasleen Royal', category: 'Barat Songs', duration: '3:36', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/4c/5c/384c5c8f-3ff8-e457-b2f7-3158ce108649/mzaf_12389299033886433185.plus.aac.p.m4a', tagline: 'Bridal Entry Favorite' },
+  { id: 'BRT-002', title: 'Kudmayi', artist: 'Shahid Mallya', category: 'Barat Songs', duration: '4:15', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2e/f1/37/2ef13747-be9f-0ced-ebce-3c0356596d4a/mzaf_3559882409919622792.plus.aac.p.m4a', tagline: 'Grand Barat Ceremony' },
+  { id: 'SNG-003', title: 'Thaam Lo', artist: 'Atif Aslam', category: 'Barat Songs', duration: '4:00', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/43/e6/03/43e60360-3f3c-8f87-1852-da6a9149281f/mzaf_2580734198283556935.plus.aac.p.m4a', tagline: 'Groom & Bride Entry' },
+  { id: 'BRT-004', title: 'Ajj Din Chadheya', artist: 'Rahat Fateh Ali Khan', category: 'Barat Songs', duration: '5:17', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/38/de/b9/38deb942-d44a-f2bb-205c-ddf05be84693/mzaf_9747647124859107103.plus.aac.p.m4a', tagline: 'Barat Auspicious Moment' },
+  { id: 'BRT-005', title: 'Madhanya', artist: 'Rahul Vaidya, Asees Kaur', category: 'Barat Songs', duration: '4:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/96/d1/cd/96d1cda3-c23d-6526-0a32-8681a869af2f/mzaf_8710952031724882316.plus.aac.p.m4a', tagline: 'Emotional Rukhsati & Vows' },
+  { id: 'SNG-021', title: 'Sun Saathiya', artist: 'Priya Saraiya', category: 'Barat Songs', duration: '3:38', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/5c/62/99/5c6299c1-06f1-c8c7-ac80-1ef12df6f037/mzaf_14533040876006658299.plus.aac.p.m4a', tagline: 'Couple Walking Entry' },
+
+  // 3. WALIMA SONGS (THIRD)
+  { id: 'SNG-013', title: 'Kesariya', artist: 'Pritam, Arijit Singh', category: 'Walima Songs', duration: '4:28', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/4c/5c/384c5c8f-3ff8-e457-b2f7-3158ce108649/mzaf_12389299033886433185.plus.aac.p.m4a', tagline: 'Walima Grand Couple Stage' },
+  { id: 'SNG-011', title: 'Dheere Dheere Se', artist: 'Yo Yo Honey Singh', category: 'Walima Songs', duration: '3:32', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b2/a9/5c/b2a95c7c-45d9-5402-097c-8914231cfc0b/mzaf_11470489494488922036.plus.aac.p.m4a', tagline: 'Walima Reception Glamour' },
+  { id: 'WLM-003', title: 'Afreen Afreen', artist: 'Rahat Fateh Ali Khan, Momina Mustehsan', category: 'Walima Songs', duration: '6:45', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/09/62/2c/09622c03-86c3-0acd-a22c-18e9f8703c89/mzaf_9536739329870064023.plus.aac.p.m4a', tagline: 'Soulful Reception Melody' },
+  { id: 'SNG-016', title: 'Tere Hawale', artist: 'Arijit Singh, Shilpa Rao', category: 'Walima Songs', duration: '5:50', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/96/d1/cd/96d1cda3-c23d-6526-0a32-8681a869af2f/mzaf_8710952031724882316.plus.aac.p.m4a', tagline: 'Romantic Walima Dance' },
+  { id: 'SNG-004', title: 'Jaan Ban Gaye', artist: 'Mithoon, Vishal Mishra', category: 'Walima Songs', duration: '3:45', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2e/f1/37/2ef13747-be9f-0ced-ebce-3c0356596d4a/mzaf_3559882409919622792.plus.aac.p.m4a', tagline: 'Intimate Couple Highlights' },
+  { id: 'SNG-009', title: 'Tum Hi Ho', artist: 'Arijit Singh', category: 'Walima Songs', duration: '4:22', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/38/de/b9/38deb942-d44a-f2bb-205c-ddf05be84693/mzaf_9747647124859107103.plus.aac.p.m4a', tagline: 'Classic Walima Romance' },
+
+  // 4. OTHERS (FOURTH)
+  { id: 'SNG-001', title: 'Tum Ho Toh', artist: 'Atif Aslam', category: 'Others', duration: '5:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/73/a1/fd/73a1fd04-ffc4-3678-12fd-8e2ce97356c5/mzaf_2445518110460654640.plus.aac.p.m4a', tagline: 'Cinematic Teaser Score' },
+  { id: 'SNG-002', title: 'Humdam', artist: 'Hadiqa Kiani', category: 'Others', duration: '4:25', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview118/v4/a3/35/0e/a3350ef0-0be9-293a-4ec3-8877acb4ae65/mzaf_1893472275867306424.plus.aac.p.m4a', tagline: 'Acoustic Highlights BGM' },
+  { id: 'SNG-005', title: 'Humdard', artist: 'Arijit Singh', category: 'Others', duration: '4:20', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/92/ab/f4/92abf498-4a29-bc78-8aab-100b6024f618/mzaf_10618261139799213404.plus.aac.p.m4a', tagline: 'Soulful Vocal Background' },
+  { id: 'SNG-006', title: 'Tum Mile', artist: 'Neeraj Shridhar', category: 'Others', duration: '5:43', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ff/92/e7/ff92e77e-e631-2c22-e8fb-87c10ff42a01/mzaf_3559705285033933426.plus.aac.p.m4a', tagline: 'Slow Motion Teaser' },
+  { id: 'SNG-008', title: 'Hawayein', artist: 'Arijit Singh', category: 'Others', duration: '4:50', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/15/d1/a8/15d1a862-edcd-6a92-624a-2bbf0f7eff26/mzaf_7165241817401822857.plus.aac.p.m4a', tagline: 'Outdoor Photo Montage' },
+  { id: 'SNG-018', title: 'Channa Mereya', artist: 'Arijit Singh', category: 'Others', duration: '4:49', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d5/f9/98/d5f998a7-0090-ee2d-03f8-557ad6c5bf65/mzaf_14251357991592637728.plus.aac.p.m4a', tagline: 'Cinematic BGM Score' },
+  { id: 'SNG-022', title: 'Tera Ban Jaunga', artist: 'Akhil Sachdeva', category: 'Others', duration: '3:56', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/61/a9/59/61a95964-c914-f0fe-b99b-4348851c13ee/mzaf_750697725323217609.plus.aac.p.m4a', tagline: 'Portrait Session BGM' }
+];
+
 export function ClientDashboard() {
-  const [activeTab, setActiveTab] = useState<'gallery' | 'overview' | 'songs' | 'security' | 'booking'>('gallery');
+  const [activeTab, setActiveTab] = useState<'overview' | 'booking' | 'songs' | 'security'>('overview');
   const [playingSong, setPlayingSong] = useState<string | null>(null);
+  const [selectedSongCategory, setSelectedSongCategory] = useState<string>('All');
+  const [songSearchQuery, setSongSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<'highlights' | 'full' | 'videos'>('highlights');
   const [favorites, setFavorites] = useState<number[]>([]);
   const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
@@ -274,9 +328,9 @@ export function ClientDashboard() {
   const handleDownloadAll = async () => {
     setIsDownloadingAll(true);
     try {
-      for (let i = 0; i < MY_IMAGES.length; i++) {
-        await handleDownload(MY_IMAGES[i], `event-image-${i + 1}.jpg`);
-      }
+      // Powerful logic: Parallel downloading for massive speed improvements
+      const downloadPromises = MY_IMAGES.map((url, i) => handleDownload(url, `event-image-${i + 1}.jpg`));
+      await Promise.all(downloadPromises);
     } catch (error) {
       console.error('Error downloading all images', error);
     } finally {
@@ -435,38 +489,34 @@ export function ClientDashboard() {
   return (
     <div className="pt-24 pb-24 min-h-screen bg-black">
       {/* Cover Header */}
-      <div className="h-[40vh] w-full relative">
+      <div className="min-h-[250px] h-[44vh] w-full relative">
         <img 
           src={MY_IMAGES[0]} 
           className="w-full h-full object-cover" 
           alt="Event cover" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-        <div className="absolute bottom-8 left-6 lg:left-12 right-6 lg:right-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-6 lg:left-12 right-4 sm:right-6 lg:right-12 flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
           <div>
+            {/* Beautiful Welcome and Username */}
+            <div className="mb-2">
+              <p className="font-serif text-xl sm:text-2xl md:text-3xl tracking-wide flex items-center gap-2 flex-wrap">
+                <span className="italic font-light text-[#f2a900]">Welcome,</span>
+                <span className="font-semibold text-white tracking-normal drop-shadow-md">
+                  {user?.name || clientData?.name || 'Valued Client'}
+                </span>
+              </p>
+            </div>
+
             <div className="flex items-center gap-2 mb-2">
-              <span className="bg-[#f2a900] text-black text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">Active Event Portal</span>
+              <span className="bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md shadow-emerald-500/20">Active Event Portal</span>
               <span className="text-white/60 text-xs flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#f2a900] pointer-events-none" /> {displayEventDate}</span>
             </div>
-            <h1 className="font-serif text-3xl md:text-5xl font-medium text-white mb-1">{displayEventName}</h1>
-            <p className="text-white/60 text-sm">{user?.name || clientData?.name ? `Prepared exclusively for ${user?.name || clientData?.name}` : 'Private Client Portal'}</p>
+            <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl font-medium text-white mb-1">{displayEventName}</h1>
+            <p className="text-white/60 text-xs sm:text-sm">{user?.name || clientData?.name ? `Prepared exclusively for ${user?.name || clientData?.name}` : 'Private Client Portal'}</p>
           </div>
 
           <div className="flex gap-3 flex-wrap items-center">
-            <button 
-              onClick={handleDownloadAll}
-              disabled={isDownloadingAll}
-              className="bg-[#f2a900] text-black px-6 py-3 rounded-full font-bold uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-white transition-colors disabled:opacity-50 shadow-lg shadow-[#f2a900]/20"
-            >
-              {isDownloadingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {isDownloadingAll ? 'Downloading...' : 'Download Collection HD'}
-            </button>
-            <button 
-              onClick={handleShare}
-              className="px-5 py-3 rounded-full border border-white/20 bg-black/60 backdrop-blur-md text-white flex items-center gap-2 text-xs font-semibold uppercase tracking-wider hover:bg-white hover:text-black transition-colors"
-            >
-              <Share2 className="w-4 h-4" /> Share Link
-            </button>
             <button 
               onClick={handleLogout} 
               className="bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white px-5 py-3 rounded-full font-bold uppercase tracking-widest text-xs flex items-center gap-2 transition-colors border border-red-500/30"
@@ -484,16 +534,17 @@ export function ClientDashboard() {
       )}
 
       {/* Main Dashboard Tabs */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 mt-8">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-8 overflow-x-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mt-6 sm:mt-8">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-8 overflow-x-auto hide-scrollbar">
           <div className="flex gap-8 min-w-max">
             <button 
-              onClick={() => setActiveTab('gallery')}
-              className={`pb-3 font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative ${activeTab === 'gallery' ? 'text-[#f2a900]' : 'text-white/50 hover:text-white'}`}
+              onClick={() => setActiveTab('overview')}
+              className={`pb-3 font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative ${activeTab === 'overview' ? 'text-[#f2a900]' : 'text-white/50 hover:text-white'}`}
             >
-              <ImageIcon className="w-4 h-4" /> Private Collection Gallery
-              {activeTab === 'gallery' && <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f2a900]" />}
+              <FileText className="w-4 h-4" /> Event Details & Status Timeline
+              {activeTab === 'overview' && <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f2a900]" />}
             </button>
+
             <button 
               onClick={() => setActiveTab('booking')}
               className={`pb-3 font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative ${activeTab === 'booking' ? 'text-[#f2a900]' : 'text-white/50 hover:text-white'}`}
@@ -502,13 +553,7 @@ export function ClientDashboard() {
               {activeTab === 'booking' && <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f2a900]" />}
             </button>
 
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className={`pb-3 font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative ${activeTab === 'overview' ? 'text-[#f2a900]' : 'text-white/50 hover:text-white'}`}
-            >
-              <FileText className="w-4 h-4" /> Event Details & Status Timeline
-              {activeTab === 'overview' && <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f2a900]" />}
-            </button>
+            
 
             <button 
               onClick={() => setActiveTab('songs')}
@@ -531,119 +576,21 @@ export function ClientDashboard() {
           <p className="text-white/40 text-xs hidden md:block uppercase tracking-widest font-mono">ID: {user?.id || 'CLIENT-PORTAL'}</p>
         </div>
 
-        {/* Tab 1: Gallery */}
-        {activeTab === 'gallery' && (
-          <div>
-            {/* HELPFUL HINT FOR GALLERY */}
-            <div className="bg-[#f2a900]/10 border border-[#f2a900]/30 rounded-2xl p-4 flex items-start gap-3 mb-6">
-              <ImageIcon className="w-5 h-5 text-[#f2a900] flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-[#f2a900] text-sm font-bold uppercase tracking-wider mb-1">Your Media Collection</h4>
-                <p className="text-white/70 text-xs leading-relaxed">Here you can view and download high-resolution photos and videos. Use the heart icon to mark your favorites, and use the download button on any photo to save it to your device.</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div className="flex gap-4 bg-white/5 p-1.5 rounded-xl border border-white/10">
-                <button 
-                  onClick={() => setFilter('highlights')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${filter === 'highlights' ? 'bg-[#f2a900] text-black font-bold' : 'text-white/60 hover:text-white'}`}
-                >
-                  Highlights ({MY_IMAGES.length})
-                </button>
-                <button 
-                  onClick={() => setFilter('full')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${filter === 'full' ? 'bg-[#f2a900] text-black font-bold' : 'text-white/60 hover:text-white'}`}
-                >
-                  Full Album (324 Photos)
-                </button>
-                <button 
-                  onClick={() => setFilter('videos')}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${filter === 'videos' ? 'bg-[#f2a900] text-black font-bold' : 'text-white/60 hover:text-white'}`}
-                >
-                  Cinematic Videos ({VIDEOS.length})
-                </button>
-              </div>
-              <div className="text-white/50 text-xs">
-                Favorites: <span className="text-[#f2a900] font-bold">{favorites.length}</span> selected
-              </div>
-            </div>
-
-            {filter === 'videos' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {VIDEOS.map((vid) => (
-                  <div key={vid.id} className="bg-zinc-900/80 rounded-2xl overflow-hidden border border-white/10 group">
-                    <div className="aspect-video relative overflow-hidden bg-black">
-                      <img src={vid.thumb} className="w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700" alt={vid.title} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <button className="w-16 h-16 rounded-full bg-[#f2a900] text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-transform">
-                          <Video className="w-6 h-6 fill-current" />
-                        </button>
-                      </div>
-                      <span className="absolute bottom-3 right-3 bg-black/80 px-2.5 py-1 rounded text-[10px] text-white font-mono">{vid.duration}</span>
-                    </div>
-                    <div className="p-5 flex items-center justify-between">
-                      <div>
-                        <h3 className="font-serif text-lg font-medium text-white">{vid.title}</h3>
-                        <p className="text-white/50 text-xs mt-1">4K UHD Color-Graded Delivery</p>
-                      </div>
-                      <button 
-                        onClick={() => handleDownload(vid.thumb, `${vid.title}.mp4`)}
-                        className="bg-white/10 hover:bg-[#f2a900] hover:text-black p-3 rounded-xl transition-colors text-white"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {MY_IMAGES.map((src, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="aspect-square relative group rounded-xl overflow-hidden bg-zinc-900"
-                  >
-                    <img 
-                      src={src} 
-                      className="w-full h-full object-cover bg-[#1a1a1a] transform group-hover:scale-105 transition-transform duration-700" 
-                      alt={`Gallery item ${i}`} 
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-4">
-                      <div className="flex justify-between items-start">
-                        <span className="bg-black/60 px-2 py-1 rounded text-[10px] font-mono text-white/80">#MF-{100 + i}</span>
-                        <button 
-                          onClick={() => toggleFavorite(i)}
-                          className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${favorites.includes(i) ? 'bg-red-500 text-white' : 'bg-black/60 hover:bg-white hover:text-black text-white'}`}
-                        >
-                          <Heart className={`w-4 h-4 ${favorites.includes(i) ? 'fill-current' : ''}`} />
-                        </button>
-                      </div>
-                      <div className="flex justify-end">
-                        <button 
-                          onClick={() => handleDownload(src, `gallery-image-${i + 1}.jpg`)}
-                          disabled={downloadingUrl === src}
-                          className="px-4 py-2 rounded-full bg-[#f2a900] hover:bg-white text-black font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 transition-colors"
-                        >
-                          {downloadingUrl === src ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                          <span>HD</span>
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab 2: Event Details & Timeline */}
+        {/* Tab 1: Event Details & Status Timeline */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {!hasBookedEvent ? (
+          <div className="space-y-8">
+            {/* HELPFUL HINT */}
+            <div className="bg-[#f2a900]/10 border border-[#f2a900]/30 rounded-2xl p-4 flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-[#f2a900] flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-[#f2a900] text-sm font-bold uppercase tracking-wider mb-1">Live Event & Production Status</h4>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  Track the real-time milestone progress of your wedding cinematography and photography deliverables from initial shoot to color grading and final delivery.
+                </p>
+              </div>
+            </div>
+
+            {(!hasBookedEvent && (!clientEvents || clientEvents.length === 0)) ? (
               <motion.div 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -651,165 +598,159 @@ export function ClientDashboard() {
               >
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#f2a900]/10 rounded-full blur-[100px] pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-                <div className="w-20 h-20 bg-[#f2a900]/20 border border-[#f2a900]/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl text-[#f2a900]">
-                  <Video className="w-10 h-10 animate-bounce" />
-                </div>
-
-                <span className="bg-red-500/20 border border-red-500/40 text-red-400 text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full inline-block mb-4">
-                  🚨 EMERGENCY: ZERO CINEMATIC BOOKINGS DETECTED
-                </span>
-
-                <h2 className="font-serif text-3xl md:text-5xl font-medium text-white max-w-3xl mx-auto leading-tight mb-4">
-                  Your Calendar is Looking <span className="text-[#f2a900] italic">Dangerously Un-Cinematic!</span>
-                </h2>
-
-                <p className="text-white/70 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-10">
-                  We deployed our high-altitude 4K drones to scan the horizon, interrogated our editing servers in Hasilpur, and checked under every lens cap... but we couldn't find an active event booking under your account yet!
+                <Calendar className="w-16 h-16 text-[#f2a900] mx-auto mb-4 pointer-events-none" />
+                <h3 className="font-serif text-3xl text-white font-medium mb-3">No Active Booked Event Found</h3>
+                <p className="text-white/60 max-w-md mx-auto text-sm mb-8 leading-relaxed">
+                  You haven't booked any wedding or cinematography coverage yet. Book your upcoming event or contact our team to initialize your timeline.
                 </p>
-
-                {/* Persuasive and funny reasons cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-10 text-left">
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-[#f2a900]/50 transition-colors">
-                    <div className="text-2xl mb-3">📸</div>
-                    <h3 className="font-serif text-lg font-medium text-white mb-2">Anti-Regret Guarantee</h3>
-                    <p className="text-white/60 text-xs leading-relaxed">
-                      Don't let your big day be remembered by your uncle's blurry smartphone camera. Our multi-camera cinema rigs make you look like Hollywood royalty!
-                    </p>
-                  </div>
-
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-[#f2a900]/50 transition-colors">
-                    <div className="text-2xl mb-3">🛸</div>
-                    <h3 className="font-serif text-lg font-medium text-white mb-2">Drone Overlord Status</h3>
-                    <p className="text-white/60 text-xs leading-relaxed">
-                      Why walk normally when our high-speed aerial drone can orbit your entrance like an epic movie hero? Guaranteed relative envy!
-                    </p>
-                  </div>
-
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:border-[#f2a900]/50 transition-colors">
-                    <div className="text-2xl mb-3">🍿</div>
-                    <h3 className="font-serif text-lg font-medium text-white mb-2">Viral 60s Teaser Reel</h3>
-                    <p className="text-white/60 text-xs leading-relaxed">
-                      Get your color-graded cinematic teaser reel before your honeymoon luggage is even unpacked. Built for maximum Instagram glory!
-                    </p>
-                  </div>
-                </div>
-
-                {/* Convincing CTA Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/packages')}
-                    className="w-full sm:w-auto bg-[#f2a900] hover:bg-white text-black font-bold uppercase tracking-widest text-xs px-8 py-4 rounded-2xl shadow-xl shadow-[#f2a900]/30 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-                  >
-                    <Sparkles className="w-4 h-4" /> Explore Studio Packages
-                  </button>
-                </div>
+                <button
+                  onClick={() => setActiveTab('booking')}
+                  className="bg-[#f2a900] hover:bg-white text-black font-bold uppercase tracking-widest text-xs px-8 py-4 rounded-full transition-all inline-flex items-center gap-2 shadow-lg shadow-[#f2a900]/20"
+                >
+                  <Calendar className="w-4 h-4 pointer-events-none" /> Book Your Event Now
+                </button>
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                  {/* HELPFUL HINT FOR OVERVIEW */}
-                  <div className="bg-[#f2a900]/10 border border-[#f2a900]/30 rounded-2xl p-4 flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-[#f2a900] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-[#f2a900] text-sm font-bold uppercase tracking-wider mb-1">Welcome to your Portal!</h4>
-                      <p className="text-white/70 text-xs leading-relaxed">Here you can track your event progress. The timeline below shows the status of your cinematic deliverables. You can also view payment status and check our gallery for your final media.</p>
+              <div className="space-y-8">
+                {/* Event Highlights & Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] flex items-center justify-center">
+                        <Calendar className="w-5 h-5 pointer-events-none" />
+                      </div>
+                      <div>
+                        <p className="text-white/50 text-[10px] uppercase tracking-widest font-semibold">Event Schedule</p>
+                        <h4 className="text-white font-medium text-base">{displayEventDate}</h4>
+                      </div>
                     </div>
+                    <p className="text-white/60 text-xs flex items-center gap-1.5 mt-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#f2a900]" /> {eventData?.venue || clientData?.location || 'Venue Confirmed'}
+                    </p>
                   </div>
 
-                  {(clientEvents && clientEvents.length > 0 ? clientEvents : [{ id: 'dummy', eventName: displayEventName, status: eventData?.status || 'Upcoming' }]).map((evt: any) => (
-  <div key={evt.id} className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-6">
-    <h2 className="font-serif text-2xl font-medium text-white mb-6 flex items-center gap-3">
-      <Sparkles className="w-5 h-5 text-[#f2a900]" /> {evt.eventName} Deliverables
-    </h2>
-    <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-white/10">
-      {['Upcoming', 'In Progress', 'Editing', 'Color Grading', 'Delivered'].map((step, idx) => {
-        const statusOrder = ['Upcoming', 'In Progress', 'Editing', 'Color Grading', 'Delivered'];
-        const currentStatus = evt.status || 'Upcoming';
-        let currentIndex = statusOrder.indexOf(currentStatus);
-        if (currentIndex === -1) currentIndex = 0;
-        
-        const stepIndex = idx;
-        const isDelivered = currentStatus === 'Delivered';
-        
-        const isCompleted = isDelivered ? true : stepIndex < currentIndex;
-        const isCurrent = isDelivered ? false : stepIndex === currentIndex;
-        const isPending = isDelivered ? false : stepIndex > currentIndex;
-
-        const titles = [
-          'Booking Confirmed & Agreement Signed',
-          'Event Shoot Completed',
-          'Editing & Assembly',
-          'Color Grading & Highlights',
-          'Completed & Delivered'
-        ];
-        const desc = [
-          'Package locked: ' + displayPackage + '. Advance deposit verified.',
-          'Multi-camera cinematography & aerial drone coverage successfully concluded.',
-          'Initial assembly and sync of all video and audio footage.',
-          'First pass cinematic highlights color-graded and uploaded to portal.',
-          'Final media available for download and custom albums in production.'
-        ];
-        return (
-          <div key={step} className="flex items-start gap-4 relative">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${isCompleted || isCurrent ? 'bg-[#f2a900] text-black' : 'bg-white/10 border border-[#f2a900] text-[#f2a900]'}`}>
-               {isCompleted ? <CheckCircle2 className="w-4 h-4 pointer-events-none" /> : isCurrent ? <Clock className="w-4 h-4 animate-pulse pointer-events-none" /> : <div className="w-2 h-2 rounded-full bg-[#f2a900]" />}
-            </div>
-            <div>
-              <h3 className={`font-medium text-sm ${isCompleted || isCurrent ? 'text-white' : 'text-white/50'}`}>{titles[idx]} {isCurrent && '(In Progress)'}</h3>
-              <p className="text-white/50 text-xs mt-1">{desc[idx]}</p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-))}
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-
-                    <h3 className="font-serif text-xl font-medium text-white mb-4">Assigned Studio Team</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-black/50 p-4 rounded-2xl border border-white/5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#f2a900]/20 text-[#f2a900] flex items-center justify-center font-bold">MK</div>
-                        <div>
-                          <p className="text-white text-sm font-medium">Muzammal Khan</p>
-                          <p className="text-white/50 text-xs">Lead Cinematographer & Director</p>
-                        </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] flex items-center justify-center">
+                        <Sparkles className="w-5 h-5" />
                       </div>
-                      <div className="bg-black/50 p-4 rounded-2xl border border-white/5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center font-bold">AS</div>
-                        <div>
-                          <p className="text-white text-sm font-medium">Ali Sher</p>
-                          <p className="text-white/50 text-xs">Senior Drone Pilot & Editor</p>
-                        </div>
+                      <div>
+                        <p className="text-white/50 text-[10px] uppercase tracking-widest font-semibold">Booked Package</p>
+                        <h4 className="text-white font-medium text-base truncate">{displayPackage}</h4>
                       </div>
                     </div>
+                    <p className="text-white/60 text-xs">
+                      {eventData?.packageDetails || 'Full Multi-Cam Production'}
+                    </p>
+                  </div>
+
+                  <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 pointer-events-none" />
+                      </div>
+                      <div>
+                        <p className="text-white/50 text-[10px] uppercase tracking-widest font-semibold">Payment & Account</p>
+                        <h4 className="text-white font-medium text-base">
+                          Rs. {(clientData?.paidAmount || 0).toLocaleString()} Paid
+                        </h4>
+                      </div>
+                    </div>
+                    <p className="text-white/60 text-xs">
+                      Total: Rs. {(clientData?.totalAmount || 0).toLocaleString()} | Balance: Rs. {Math.max(0, (clientData?.totalAmount || 0) - (clientData?.paidAmount || 0)).toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-[#f2a900]/20 via-black to-black border border-[#f2a900]/30 rounded-3xl p-6">
-                    <h3 className="font-serif text-lg text-white mb-4">Package Specification</h3>
-                    <div className="space-y-3 text-xs">
-                      <div className="flex justify-between py-2 border-b border-white/10">
-                        <span className="text-white/60">Selected Package</span>
-                        <span className="text-white font-semibold">{displayPackage}</span>
+                {/* Deliverables Timeline */}
+                {(clientEvents && clientEvents.length > 0 ? clientEvents : [{ id: 'evt-curr', eventName: displayEventName, status: eventData?.status || 'Upcoming' }]).map((evt) => (
+                  <div key={evt.id} className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
+                      <div>
+                        <span className="bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                          {evt.eventType || 'Ceremony'}
+                        </span>
+                        <h2 className="font-serif text-2xl md:text-3xl font-medium text-white mt-2 flex items-center gap-3">
+                          <Sparkles className="w-5 h-5 text-[#f2a900]" /> {evt.eventName} Deliverables
+                        </h2>
+                        {evt.venue && (
+                          <p className="text-white/50 text-xs flex items-center gap-1.5 mt-1">
+                            <MapPin className="w-3.5 h-3.5 text-[#f2a900]" /> {evt.venue} &bull; {evt.date}
+                          </p>
+                        )}
                       </div>
-                      <div className="flex justify-between py-2 border-b border-white/10">
-                        <span className="text-white/60">Total Value</span>
-                        <span className="text-[#f2a900] font-bold">Rs. {paymentData?.amount ? paymentData.amount.toLocaleString() : 'Pending'}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-white/10">
-                        <span className="text-white/60">Payment Status</span>
-                        <span className={`px-2.5 py-0.5 rounded-full font-bold ${paymentData?.status === 'Received' ? 'bg-green-500/20 text-green-400' : 'bg-[#f2a900]/20 text-[#f2a900]'}`}>
-                          {paymentData?.status || 'Pending'}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs uppercase tracking-widest text-white/50">Current Status:</span>
+                        <span className="bg-white/10 text-[#f2a900] border border-[#f2a900]/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                          {evt.status || 'Upcoming'}
                         </span>
                       </div>
-                      <div className="flex justify-between py-2">
-                        <span className="text-white/60">Studio Location</span>
-                        <span className="text-white text-right">Office No.32, Hasilpur</span>
-                      </div>
+                    </div>
+
+                    <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-white/10">
+                      {['Upcoming', 'In Progress', 'Editing', 'Color Grading', 'Delivered'].map((step, idx) => {
+                        const statusOrder = ['Upcoming', 'In Progress', 'Editing', 'Color Grading', 'Delivered'];
+                        const currentStatus = evt.status || 'Upcoming';
+                        let currentIndex = statusOrder.indexOf(currentStatus);
+                        if (currentIndex === -1) currentIndex = 0;
+                        
+                        const stepIndex = idx;
+                        const isDelivered = currentStatus === 'Delivered';
+                        
+                        const isCompleted = isDelivered ? true : stepIndex < currentIndex;
+                        const isCurrent = isDelivered ? false : stepIndex === currentIndex;
+                        const isPending = isDelivered ? false : stepIndex > currentIndex;
+                        const titles = [
+                          'Booking Confirmed & Agreement Signed',
+                          'Event Shoot Completed',
+                          'Editing & Assembly',
+                          'Color Grading & Highlights',
+                          'Completed & Delivered'
+                        ];
+                        const desc = [
+                          'Package locked: ' + displayPackage + '. Advance deposit verified.',
+                          'Multi-camera cinematography & aerial drone coverage successfully concluded.',
+                          'Initial assembly and sync of all video and audio footage.',
+                          'First pass cinematic highlights color-graded and uploaded to portal.',
+                          'Final media available for download and custom albums in production.'
+                        ];
+                        return (
+                          <div key={step} className="flex items-start gap-4 relative">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${isCompleted || isCurrent ? 'bg-[#f2a900] text-black' : 'bg-white/10 border border-[#f2a900] text-[#f2a900]'}`}>
+                              {isCompleted ? <CheckCircle2 className="w-4 h-4 pointer-events-none" /> : isCurrent ? <Clock className="w-4 h-4 animate-pulse pointer-events-none" /> : <div className="w-2 h-2 rounded-full bg-[#f2a900]" />}
+                            </div>
+                            <div>
+                              <h3 className={`font-medium text-sm ${isCompleted || isCurrent ? 'text-white' : 'text-white/50'}`}>
+                                {titles[idx]} {isCurrent && '(In Progress)'}
+                              </h3>
+                              <p className="text-white/50 text-xs mt-1">{desc[idx]}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Assigned Team & Direct Contact */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
+                  <h3 className="font-serif text-xl font-medium text-white mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-[#f2a900]" /> Assigned Studio Team
+                  </h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/40 border border-white/5 rounded-2xl p-5">
+                    <div>
+                      <p className="text-white font-medium text-sm">{eventData?.teamLead || 'Muzammal Khan & Senior Cinematography Crew'}</p>
+                      <p className="text-white/50 text-xs mt-0.5">Lead Cinematographer & Creative Director</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href="https://wa.me/923072480246"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-[#25D366]/20 hover:bg-[#25D366] hover:text-black text-[#25D366] text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl border border-[#25D366]/30 transition-all flex items-center gap-2"
+                      >
+                        Contact Director on WhatsApp
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -824,13 +765,20 @@ export function ClientDashboard() {
             {/* HELPFUL HINT FOR MUSIC */}
             <div className="bg-[#f2a900]/10 border border-[#f2a900]/30 rounded-2xl p-4 flex items-start gap-3">
               <ListMusic className="w-5 h-5 text-[#f2a900] flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-[#f2a900] text-sm font-bold uppercase tracking-wider mb-1">Song Selection Guide</h4>
-                <p className="text-white/70 text-xs leading-relaxed">Here you can see the tracks curated by our studio for your event film. You can listen to previews by clicking the play button. If you wish to suggest changes or select different tracks, please contact our studio directly.</p>
+              <div className="flex-1">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+                  <h4 className="text-[#f2a900] text-sm font-bold uppercase tracking-wider">Song Selection Guide</h4>
+                  <span className="text-[11px] bg-[#f2a900]/20 text-[#f2a900] px-2.5 py-0.5 rounded-full font-mono font-bold">
+                    {currentSongIds.length} Tracks Selected
+                  </span>
+                </div>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  Select your preferred tracks classified by event celebration: <span className="text-amber-400 font-semibold">1. Mehndi Songs</span>, <span className="text-rose-400 font-semibold">2. Barat Songs</span>, <span className="text-[#f2a900] font-semibold">3. Walima Songs</span>, followed by <span className="text-sky-400 font-semibold">4. Others</span> (romantic background scores). Listen to previews with the play button.
+                </p>
               </div>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/10">
                 <div>
                   <h2 className="font-serif text-2xl font-medium text-white flex items-center gap-2">
@@ -838,44 +786,113 @@ export function ClientDashboard() {
                   </h2>
                   <p className="text-white/60 text-xs mt-1">Review the tracks curated by MuzFrame Studio for your cinematic highlights film.</p>
                 </div>
-                <span className={`border px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest self-start md:self-center ${playlistData?.status === 'Submitted & Locked' ? 'bg-[#f2a900]/20 text-[#f2a900] border-[#f2a900]/30' : 'bg-white/10 text-white/70 border-white/20'}`}>
-                  {playlistData?.status || 'Draft'}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className={`border px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest ${playlistData?.status === 'Submitted & Locked' ? 'bg-[#f2a900]/20 text-[#f2a900] border-[#f2a900]/30' : 'bg-white/10 text-white/70 border-white/20'}`}>
+                    {playlistData?.status || 'Draft'}
+                  </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { id: 'SNG-001', title: 'Tum Ho Toh', artist: 'Atif Aslam', category: 'Romantic BGM', duration: '5:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/73/a1/fd/73a1fd04-ffc4-3678-12fd-8e2ce97356c5/mzaf_2445518110460654640.plus.aac.p.m4a' },
-                  { id: 'SNG-002', title: 'Humdam', artist: 'Hadiqa Kiani', category: 'Romantic BGM', duration: '4:25', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview118/v4/a3/35/0e/a3350ef0-0be9-293a-4ec3-8877acb4ae65/mzaf_1893472275867306424.plus.aac.p.m4a' },
-                  { id: 'SNG-003', title: 'Thaam Lo', artist: 'Atif Aslam', category: 'Couple Entry', duration: '4:00', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/43/e6/03/43e60360-3f3c-8f87-1852-da6a9149281f/mzaf_2580734198283556935.plus.aac.p.m4a' },
-                  { id: 'SNG-004', title: 'Jaan Ban Gaye', artist: 'Mithoon, Vishal Mishra', category: 'Couple Entry', duration: '3:45', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2e/f1/37/2ef13747-be9f-0ced-ebce-3c0356596d4a/mzaf_3559882409919622792.plus.aac.p.m4a' },
-                  { id: 'SNG-005', title: 'Humdard', artist: 'Arijit Singh', category: 'Romantic BGM', duration: '4:20', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/92/ab/f4/92abf498-4a29-bc78-8aab-100b6024f618/mzaf_10618261139799213404.plus.aac.p.m4a' },
-                  { id: 'SNG-006', title: 'Tum Mile', artist: 'Neeraj Shridhar', category: 'Cinematic Teaser', duration: '5:43', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ff/92/e7/ff92e77e-e631-2c22-e8fb-87c10ff42a01/mzaf_3559705285033933426.plus.aac.p.m4a' },
-                  { id: 'SNG-007', title: 'Tune Jo Na Kaha', artist: 'Mohit Chauhan', category: 'Romantic BGM', duration: '5:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ed/43/e6/ed43e64f-231e-06a5-8e02-341ee4b1b597/mzaf_7067163473511570473.plus.aac.p.m4a' },
-                  { id: 'SNG-008', title: 'Hawayein', artist: 'Arijit Singh', category: 'Romantic BGM', duration: '4:50', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/15/d1/a8/15d1a862-edcd-6a92-624a-2bbf0f7eff26/mzaf_7165241817401822857.plus.aac.p.m4a' },
-                  { id: 'SNG-009', title: 'Tum Hi Ho', artist: 'Arijit Singh', category: 'Couple Entry', duration: '4:22', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/38/de/b9/38deb942-d44a-f2bb-205c-ddf05be84693/mzaf_9747647124859107103.plus.aac.p.m4a' },
-                  { id: 'SNG-010', title: 'Humnava Mere', artist: 'Jubin Nautiyal', category: 'Romantic BGM', duration: '5:04', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d8/5e/c3/d85ec3f3-450b-6a9b-7ea1-9345538922d7/mzaf_734647189651103547.plus.aac.p.m4a' },
-                  { id: 'SNG-011', title: 'Dheere Dheere Se', artist: 'Yo Yo Honey Singh', category: 'Walima / Party', duration: '3:32', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/b2/a9/5c/b2a95c7c-45d9-5402-097c-8914231cfc0b/mzaf_11470489494488922036.plus.aac.p.m4a' },
-                  { id: 'SNG-012', title: 'Wafa Ne Bewafai', artist: 'Arijit Singh, Neeti Mohan', category: 'Cinematic BGM', duration: '4:40', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/09/62/2c/09622c03-86c3-0acd-a22c-18e9f8703c89/mzaf_9536739329870064023.plus.aac.p.m4a' },
-                  { id: 'SNG-013', title: 'Kesariya', artist: 'Pritam, Arijit Singh', category: 'Couple Entry', duration: '4:28', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/4c/5c/384c5c8f-3ff8-e457-b2f7-3158ce108649/mzaf_12389299033886433185.plus.aac.p.m4a' },
-                  { id: 'SNG-014', title: 'Sitare', artist: 'Ayaan Khan', category: 'Romantic BGM', duration: '3:15', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/19/0f/dd/190fdd71-103d-fef5-f5db-6483967cba1e/mzaf_4765136315761044502.plus.aac.p.m4a' },
-                  { id: 'SNG-015', title: 'Pehli Dafa', artist: 'Atif Aslam', category: 'Romantic BGM', duration: '4:52', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/a0/94/f9/a094f99f-c175-d9dd-c475-040048553ea1/mzaf_16550135546441316062.plus.aac.p.m4a' },
-                  { id: 'SNG-016', title: 'Tere Hawale', artist: 'Arijit Singh', category: 'Couple Entry', duration: '5:50', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/96/d1/cd/96d1cda3-c23d-6526-0a32-8681a869af2f/mzaf_8710952031724882316.plus.aac.p.m4a' },
-                  { id: 'SNG-017', title: 'Tum Se Hi', artist: 'Mohit Chauhan', category: 'Romantic BGM', duration: '5:21', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e7/39/b8/e739b870-54a1-8f33-57d5-3817108b8bd9/mzaf_16925921654959290990.plus.aac.p.m4a' },
-                  { id: 'SNG-018', title: 'Channa Mereya', artist: 'Arijit Singh', category: 'Cinematic BGM', duration: '4:49', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d5/f9/98/d5f998a7-0090-ee2d-03f8-557ad6c5bf65/mzaf_14251357991592637728.plus.aac.p.m4a' },
-                  { id: 'SNG-019', title: 'Tera Hua', artist: 'Atif Aslam', category: 'Romantic BGM', duration: '3:34', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/bd/97/56/bd97566b-42ee-c10b-f6da-c39b73ba4f2c/mzaf_15535758550840505739.plus.aac.p.m4a' },
-                  { id: 'SNG-020', title: 'Thame Dilo Ki Baatain', artist: 'Atif Aslam', category: 'Romantic BGM', duration: '4:00', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/43/e6/03/43e60360-3f3c-8f87-1852-da6a9149281f/mzaf_2580734198283556935.plus.aac.p.m4a' },
-                  { id: 'SNG-021', title: 'Sun Saathiya', artist: 'Priya Saraiya', category: 'Couple Entry', duration: '3:38', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/5c/62/99/5c6299c1-06f1-c8c7-ac80-1ef12df6f037/mzaf_14533040876006658299.plus.aac.p.m4a' },
-                  { id: 'SNG-022', title: 'Tera Ban Jaunga', artist: 'Akhil Sachdeva', category: 'Romantic BGM', duration: '3:56', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/61/a9/59/61a95964-c914-f0fe-b99b-4348851c13ee/mzaf_750697725323217609.plus.aac.p.m4a' },
-                  { id: 'SNG-023', title: 'Kya Sach Ho Tum', artist: 'Amna Riaz', category: 'Romantic BGM', duration: '3:10', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/90/57/28/90572899-cf22-5791-68dc-6db961bcb308/mzaf_13889619915411454579.plus.aac.p.m4a' },
-                  { id: 'SNG-024', title: 'Saiyan Dil Mein Aana Re', artist: 'Shamshad Begum', category: 'Fun / Retro', duration: '3:20', previewUrl: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/21/bf/11/21bf117c-744b-db9d-06f2-f1f5c87fb998/mzaf_7994364603410990968.plus.aac.p.m4a' }
-                ].map((song) => {
+              {/* Classification Tabs & Search Bar */}
+              <div className="space-y-4 mb-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  {/* Category Pills (Strictly: All, Mehndi Songs, Barat Songs, Walima Songs, Others) */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSongCategory('All')}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1.5 ${
+                        selectedSongCategory === 'All'
+                          ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/5'
+                      }`}
+                    >
+                      <span>All Tracks</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono">
+                        {CLIENT_SONGS_LIST.length}
+                      </span>
+                    </button>
+
+                    {SONG_CATEGORIES.map((cat) => {
+                      const count = CLIENT_SONGS_LIST.filter(s => s.category === cat.id).length;
+                      const isActive = selectedSongCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedSongCategory(cat.id)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1.5 ${
+                            isActive
+                              ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20'
+                              : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/5'
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.label}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isActive ? 'bg-black/20' : 'bg-white/10'}`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="relative min-w-[220px] sm:w-64">
+                    <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={songSearchQuery}
+                      onChange={(e) => setSongSearchQuery(e.target.value)}
+                      placeholder="Search song or artist..."
+                      className="w-full bg-black/60 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#f2a900]"
+                    />
+                    {songSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSongSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs font-bold"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Songs List Rendering */}
+              {(() => {
+                // Filter songs based on search and category
+                const filteredSongs = CLIENT_SONGS_LIST.filter((song) => {
+                  const matchesCategory = selectedSongCategory === 'All' || song.category === selectedSongCategory;
+                  const query = songSearchQuery.toLowerCase().trim();
+                  const matchesSearch = !query || 
+                    song.title.toLowerCase().includes(query) || 
+                    song.artist.toLowerCase().includes(query) ||
+                    (song.tagline && song.tagline.toLowerCase().includes(query));
+                  return matchesCategory && matchesSearch;
+                });
+
+                // Helper to render a song card
+                const renderCard = (song: ClientSong) => {
                   const isPlaying = playingSong === song.id;
                   const isSelected = currentSongIds.includes(song.id);
+                  const isLocked = playlistData?.status === 'Submitted & Locked';
+
                   return (
-                    <div key={song.id} className={`p-5 rounded-2xl border transition-all flex items-center justify-between gap-4 ${isPlaying ? 'bg-[#f2a900]/10 border-[#f2a900]/50' : 'bg-black/50 border-white/10 hover:border-white/20'}`}>
-                      <div className="flex items-center gap-3.5">
+                    <div
+                      key={song.id}
+                      className={`p-4 sm:p-5 rounded-2xl border transition-all flex items-center justify-between gap-3 sm:gap-4 ${
+                        isPlaying
+                          ? 'bg-[#f2a900]/10 border-[#f2a900]/60 shadow-[0_0_20px_rgba(242,169,0,0.15)]'
+                          : isSelected
+                          ? 'bg-white/[0.07] border-[#f2a900]/30'
+                          : 'bg-black/50 border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <button
+                          type="button"
                           onClick={() => {
                             if (isPlaying) {
                               setPlayingSong(null);
@@ -885,33 +902,124 @@ export function ClientDashboard() {
                               studioAudio.playSong(song.id, song.previewUrl);
                             }
                           }}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-[#f2a900] text-black shadow-lg scale-105' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                            isPlaying
+                              ? 'bg-[#f2a900] text-black shadow-lg scale-105'
+                              : 'bg-white/10 text-white hover:bg-[#f2a900] hover:text-black'
+                          }`}
+                          title={isPlaying ? 'Pause Preview' : 'Play Preview'}
                         >
                           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                         </button>
-                        <div>
-                          <h4 className="font-semibold text-white text-sm flex items-center gap-2">
-                            {song.title}
-                            {isPlaying && <span className="text-[10px] bg-[#f2a900] text-black px-1.5 py-0.5 rounded font-bold uppercase animate-pulse">Playing</span>}
-                          </h4>
-                          <p className="text-white/50 text-xs mt-0.5">{song.artist} • <span className="text-[#f2a900] font-mono">{song.category}</span></p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-semibold text-white text-xs sm:text-sm truncate">
+                              {song.title}
+                            </h4>
+                            {isPlaying && (
+                              <span className="text-[9px] bg-[#f2a900] text-black px-1.5 py-0.2 rounded font-bold uppercase animate-pulse">
+                                Playing
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-white/50 text-[11px] mt-0.5 truncate">
+                            {song.artist} • <span className="text-white/40">{song.duration}</span>
+                          </p>
+                          {song.tagline && (
+                            <p className="text-[#f2a900]/80 text-[10px] italic mt-0.5 truncate">
+                              {song.tagline}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-white/80 font-mono text-xs">{song.duration}</span>
-                        <button onClick={() => handleToggleSong(song.id, song.title)} className={`mt-2 px-3 py-1 ml-auto block rounded-lg text-[10px] font-bold uppercase transition-all ${isSelected ? "bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white" : "bg-white/10 text-white hover:bg-[#f2a900] hover:text-black"}`}>
-                          {isSelected ? "Remove" : "Select"}
+
+                      <div className="text-right flex-shrink-0">
+                        <button
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() => handleToggleSong(song.id, song.title)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all tracking-wider ${
+                            isSelected
+                              ? 'bg-red-500/20 text-red-300 hover:bg-red-500 hover:text-white border border-red-500/30'
+                              : 'bg-white/10 text-white hover:bg-[#f2a900] hover:text-black border border-white/10'
+                          } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {isSelected ? 'Remove' : '+ Select'}
                         </button>
                         {isSelected && (
-                          <div className="text-green-400 text-[10px] flex items-center justify-end gap-1 mt-0.5">
+                          <div className="text-green-400 text-[10px] flex items-center justify-end gap-1 mt-1">
                             <CheckCircle2 className="w-3 h-3" /> Selected
                           </div>
                         )}
                       </div>
                     </div>
                   );
-                })}
-              </div>
+                };
+
+                // If user selected "All" and there is no search query, show the 4 grouped sections in strict order
+                if (selectedSongCategory === 'All' && !songSearchQuery.trim()) {
+                  return (
+                    <div className="space-y-8">
+                      {SONG_CATEGORIES.map((cat, index) => {
+                        const catSongs = CLIENT_SONGS_LIST.filter(s => s.category === cat.id);
+                        if (catSongs.length === 0) return null;
+
+                        return (
+                          <div key={cat.id} className="space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-white/10 gap-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{cat.icon}</span>
+                                <h3 className="text-white font-serif text-base sm:text-lg font-medium flex items-center gap-2">
+                                  <span>{index + 1}. {cat.label}</span>
+                                </h3>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${cat.badgeColor}`}>
+                                  {catSongs.length} Tracks
+                                </span>
+                              </div>
+                              <p className="text-white/50 text-[11px]">{cat.desc}</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                              {catSongs.map(renderCard)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+
+                // If user filtered by category or searched, show list matching the filter
+                if (filteredSongs.length === 0) {
+                  return (
+                    <div className="p-8 text-center bg-black/40 rounded-2xl border border-white/10">
+                      <Music className="w-8 h-8 text-white/30 mx-auto mb-2" />
+                      <p className="text-white/70 text-sm font-medium">No tracks found matching your search.</p>
+                      <p className="text-white/40 text-xs mt-1">Try another search term or clear the filter.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSongCategory('All');
+                          setSongSearchQuery('');
+                        }}
+                        className="mt-4 px-4 py-2 bg-[#f2a900] text-black text-xs font-bold rounded-xl hover:bg-white transition-all"
+                      >
+                        Show All Songs
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-xs text-white/60 pb-1 border-b border-white/10">
+                      <span>Showing {filteredSongs.length} songs in {selectedSongCategory === 'All' ? 'all categories' : selectedSongCategory}</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      {filteredSongs.map(renderCard)}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="mt-8 border-t border-white/10 pt-8">
                 <h3 className="font-serif text-xl font-medium text-white mb-4 flex items-center gap-2">
@@ -967,7 +1075,7 @@ export function ClientDashboard() {
         {/* Tab 4: Security & Account Settings (Change Password) */}
         {activeTab === 'security' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] flex items-center justify-center">
                   <Key className="w-5 h-5" />
@@ -1038,7 +1146,7 @@ export function ClientDashboard() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+              <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
                 <h3 className="font-serif text-xl font-medium text-white mb-4">Account Profile</h3>
                 <div className="space-y-4 text-sm">
                   <div>
@@ -1080,7 +1188,7 @@ export function ClientDashboard() {
               </div>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
               {bookingSuccess && (
                 <div className="bg-green-500/20 border border-green-500/50 text-green-400 p-4 rounded-xl text-sm mb-6 flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5" /> Booking request sent successfully! We will contact you soon.

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Play, Camera, Star, User } from 'lucide-react';
+import { ArrowRight, Play, Camera, Star, User, Calculator } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { TrustedBrandsSection } from '../components/TrustedBrandsSection';
+import { QuickCalculator } from '../components/QuickCalculator';
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=3000&auto=format&fit=crop', // Stunning Drone view
@@ -18,10 +19,13 @@ export function Home() {
   const navigate = useNavigate();
 
   const handleBookNow = () => {
-    if (user) {
-      navigate('/contact');
-    } else {
-      navigate('/login');
+    navigate('/contact');
+  };
+
+  const handleQuickQuote = () => {
+    const el = document.getElementById('quick-calculator');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -58,19 +62,11 @@ export function Home() {
         
         {/* Hero Content */}
         <div className="relative z-20 max-w-7xl mx-auto px-6 lg:px-12 w-full text-center mt-20">
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-[#f2a900] uppercase tracking-[0.3em] text-sm font-semibold mb-6"
-          >
-            Welcome to MuzFrame Studio
-          </motion.p>
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="font-serif text-5xl md:text-7xl lg:text-8xl font-medium text-white leading-tight mb-8 uppercase"
+            className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white leading-tight mb-6 sm:mb-8 uppercase max-w-4xl mx-auto px-4 sm:px-0"
           >
             Framing Your <br className="hidden sm:block" />
             <span className="italic luxury-gradient">Wedding Moments</span><br />
@@ -80,20 +76,20 @@ export function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full px-4 sm:px-0"
           >
             <button 
               onClick={handleBookNow}
-              className="bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)]"
+              className="w-full sm:w-auto justify-center bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)]"
             >
               Book Now <ArrowRight className="w-4 h-4" />
             </button>
-            <Link 
-              to="/gallery" 
-              className="nav-pill px-8 py-4 bg-black/50 backdrop-blur-md flex items-center gap-2 hover:border-[#f2a900] hover:text-[#f2a900]"
+            <button 
+              onClick={handleQuickQuote}
+              className="w-full sm:w-auto justify-center nav-pill px-8 py-4 bg-black/50 backdrop-blur-md flex items-center gap-2 hover:border-[#f2a900] hover:text-[#f2a900] transition-colors cursor-pointer text-xs sm:text-sm uppercase tracking-widest font-bold"
             >
-              <Play className="w-4 h-4" /> View Portfolio
-            </Link>
+              <Calculator className="w-4 h-4 text-[#f2a900]" /> Quick Quote
+            </button>
           </motion.div>
         </div>
         
@@ -112,38 +108,11 @@ export function Home() {
       {/* Chosen By Section (Bajwas Collection, Modern Cash & Carry, Shamsheer) */}
       <TrustedBrandsSection />
 
-      {/* Services Snippet */}
-      <section className="bg-black py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-16">
-            <h2 className="font-serif text-4xl md:text-5xl mb-4">Our Expertise</h2>
-            <p className="text-white/60 max-w-2xl mx-auto">We offer comprehensive packages including professional DSLR photography, cinematic videography, and stunning drone shots to capture your most important days.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: 'Photography', desc: 'High-resolution moments captured with state-of-the-art DSLR cameras.', icon: Camera, img: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2938&auto=format&fit=crop' },
-              { title: 'Cinematography', desc: 'Full highlight reels and complete event video editing.', icon: Play, img: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2942&auto=format&fit=crop' },
-              { title: 'Drone Shots', desc: 'Breathtaking aerial views that add a cinematic scale to your story.', icon: Star, img: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?q=80&w=2000&auto=format&fit=crop' }
-            ].map((s, i) => (
-              <div key={i} className="group relative rounded-2xl overflow-hidden aspect-[4/5] cursor-pointer">
-                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={{ backgroundImage: `url(${s.img})` }} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <s.icon className="w-10 h-10 text-[#f2a900] mb-4" />
-                  <h3 className="font-serif text-3xl mb-2">{s.title}</h3>
-                  <p className="text-white/70 text-sm mb-6 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                    {s.desc}
-                  </p>
-                  <Link to="/packages" className="text-xs uppercase tracking-widest text-[#f2a900] font-semibold flex items-center gap-2">
-                    View Packages <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Quick Calculator Section */}
+      <section id="quick-calculator" className="bg-black py-24 border-t border-white/5 scroll-mt-12">
+        <QuickCalculator />
       </section>
+
       {/* Video Reel Section */}
       <section className="relative py-32 bg-[#0a0a0a] overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -167,7 +136,7 @@ export function Home() {
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
             <div className="absolute inset-0 flex items-center justify-center">
-               <button className="w-24 h-24 rounded-full border border-white/30 backdrop-blur-md flex items-center justify-center group-hover:border-[#f2a900] group-hover:text-[#f2a900] transition-all hover:scale-110 group-hover:shadow-[0_0_30px_rgba(242,169,0,0.3)]">
+               <button onClick={() => navigate('/gallery')} className="w-24 h-24 rounded-full border border-white/30 backdrop-blur-md flex items-center justify-center group-hover:border-[#f2a900] group-hover:text-[#f2a900] transition-all hover:scale-110 group-hover:shadow-[0_0_30px_rgba(242,169,0,0.3)]">
                  <Play className="w-8 h-8 ml-2" />
                </button>
             </div>

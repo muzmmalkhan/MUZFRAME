@@ -1,12 +1,12 @@
-import { Camera, Video, Plane, Edit3, Image as ImageIcon, Check } from 'lucide-react';
+import { Camera, Video, Plane, Edit3, Image as ImageIcon, Check, Radio, MonitorPlay, Users, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const INDIVIDUAL_SERVICES = [
-  { title: "Wedding Photography", icon: ImageIcon, desc: "Candid and cinematic moments captured beautifully." },
-  { title: "Fashion Shoots", icon: Camera, desc: "High-end editorial fashion photography." },
-  { title: "Product Shoots", icon: Check, desc: "Premium commercial product showcases." },
-  { title: "Drone Shoots", icon: Plane, desc: "Epic aerial 4K cinematography." },
-  { title: "Video Editing", icon: Video, desc: "Professional post-production and color grading." },
+  { title: "Wedding Shoot", icon: ImageIcon, desc: "Candid and cinematic moments captured beautifully." },
+  { title: "Model Shoot", icon: Users, desc: "High-end editorial fashion and model photography." },
+  { title: "Re Branding", icon: Briefcase, desc: "Transform and elevate your corporate identity." },
+  { title: "Audio Video Editing", icon: MonitorPlay, desc: "Professional audio mixing, post-production and color grading." },
+  { title: "Live Coverages", icon: Radio, desc: "High-quality multi-camera live streaming and event coverage." },
 ];
 
 export function Services() {
@@ -20,7 +20,7 @@ export function Services() {
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Core <span className="luxury-gradient italic">Services</span></h2>
             <p className="text-white/60 max-w-2xl mx-auto text-lg">We provide specialized creative services tailored to your needs.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 place-items-center sm:place-items-stretch">
             {INDIVIDUAL_SERVICES.map((srv, idx) => (
               <motion.div 
                 key={idx}
@@ -28,7 +28,7 @@ export function Services() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="glass-panel p-6 rounded-2xl flex flex-col items-center text-center group hover:bg-[#fff]/5 hover:border-[#f2a900]/30 transition-all duration-300"
+                className="w-[85%] sm:w-full glass-panel p-6 md:p-8 rounded-3xl flex flex-col items-center text-center group hover:bg-[#fff]/5 hover:border-[#f2a900]/30 transition-all duration-300"
               >
                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 text-[#f2a900] group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(242,169,0,0.2)] transition-all">
                   <srv.icon className="w-8 h-8" />
