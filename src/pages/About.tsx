@@ -35,7 +35,7 @@ export function About() {
             className="space-y-8"
           >
             <div>
-              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Hamari Kahani • Our Story</p>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Our Story</p>
               <h1 className="font-serif text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
                 More than just <br/><span className="luxury-gradient italic">photographers.</span>
               </h1>
@@ -53,7 +53,7 @@ export function About() {
             <div className="py-8 border-y border-white/10 my-8 grid grid-cols-2 gap-8">
               <div>
                 <h4 className="font-serif text-4xl text-[#f2a900] mb-2">5+</h4>
-                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Saal Ka Tajurba (Years)</p>
+                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Years Experience</p>
               </div>
               <div>
                 <h4 className="font-serif text-4xl text-[#f2a900] mb-2">300+</h4>

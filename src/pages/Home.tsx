@@ -102,13 +102,13 @@ export function Home() {
               onClick={handleBookNow}
               className="w-full sm:w-auto justify-center bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)] cursor-pointer"
             >
-              Book Karein <ArrowRight className="w-4 h-4" />
+              Book Now <ArrowRight className="w-4 h-4" />
             </button>
             <button 
               onClick={handleQuickQuote}
               className="w-full sm:w-auto justify-center nav-pill px-8 py-4 bg-black/50 backdrop-blur-md flex items-center gap-2 hover:border-[#f2a900] hover:text-[#f2a900] transition-colors cursor-pointer text-xs sm:text-sm uppercase tracking-widest font-bold"
             >
-              <Calculator className="w-4 h-4 text-[#f2a900]" /> Instant Quote Banayein
+              <Calculator className="w-4 h-4 text-[#f2a900]" /> Instant Quote
             </button>
           </motion.div>
         </div>
@@ -141,12 +141,12 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12">
             <div>
-              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Hamara Latest Kaam • Showreel</p>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Our Showreel</p>
               <h2 className="font-serif text-4xl md:text-5xl">Cinematic <span className="luxury-gradient italic">Vision</span></h2>
               <p className="text-white/60 text-sm mt-2">Real wedding stories aur royal celebration highlights dekhein.</p>
             </div>
             <Link to="/gallery" className="nav-pill hidden md:flex items-center gap-2 mt-4 md:mt-0 glass-panel">
-              Tamam Videos Dekhein <ArrowRight className="w-4 h-4" />
+              View All Videos <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           
@@ -170,8 +170,8 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
            <div className="text-center mb-16">
               <Star className="w-8 h-8 text-[#f2a900] mx-auto mb-4" />
-              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Hamare Khushgawar Clients</p>
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">Client Love & Reviews</h2>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Client Reviews</p>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">Client Love & Feedback</h2>
               <p className="text-white/60 max-w-2xl mx-auto">Dekhein un couples aur brand owners ka feedback jinhon ne apne sab se qeemti lamhaat hamare naam kiye.</p>
            </div>
            

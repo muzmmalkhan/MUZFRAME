@@ -77,7 +77,7 @@ export function Packages() {
             >
               {plan.isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#f2a900] text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                  Sab Se Ziyada Pasandida • Most Popular
+                  Most Popular
                 </div>
               )}
               <h2 className={`font-serif text-3xl md:text-4xl text-center mb-8 ${plan.isPopular ? 'text-[#f2a900]' : 'text-white'}`}>
@@ -99,7 +99,7 @@ export function Packages() {
                   : 'bg-white/5 text-white hover:bg-[#f2a900] hover:text-black border border-white/10 hover:border-transparent'
                 }`}
               >
-                Ye Package Book Karein
+                Book This Package
               </button>
             </div>
           ))}

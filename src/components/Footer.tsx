@@ -36,18 +36,18 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="font-serif text-xl mb-6 text-[#f2a900]">Quick Links • Zaroori Links</h4>
+          <h4 className="font-serif text-xl mb-6 text-[#f2a900]">Quick Links</h4>
           <ul className="space-y-4">
-            <li><Link to="/services" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Services (Khadmaat)</Link></li>
-            <li><Link to="/gallery" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Portfolio (Hamara Kaam)</Link></li>
-            <li><Link to="/about" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Our Story (Kahani)</Link></li>
-            <li><Link to="/contact" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Contact (Rabta Karein)</Link></li>
-            <li><Link to="/login" className="text-white/60 hover:text-[#f2a900] transition-colors uppercase text-xs tracking-widest">Client Portal (Login)</Link></li>
+            <li><Link to="/services" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Services</Link></li>
+            <li><Link to="/gallery" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Portfolio</Link></li>
+            <li><Link to="/about" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Our Story</Link></li>
+            <li><Link to="/contact" className="text-white/60 hover:text-white transition-colors uppercase text-xs tracking-widest">Contact Us</Link></li>
+            <li><Link to="/login" className="text-white/60 hover:text-[#f2a900] transition-colors uppercase text-xs tracking-widest">Client Portal</Link></li>
           </ul>
         </div>
 
         <div>
-           <h4 className="font-serif text-xl mb-6 text-[#f2a900]">Contact Info • Rabta</h4>
+           <h4 className="font-serif text-xl mb-6 text-[#f2a900]">Contact Info</h4>
            <ul className="space-y-4">
              <li className="flex items-start gap-3 text-white/60">
                <MapPin className="w-5 h-5 flex-shrink-0 text-[#f2a900]" />

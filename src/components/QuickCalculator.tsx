@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calculator, ArrowRight, CheckCircle2, Loader2, Camera, Video, Users, Plane, Check, Minus, Plus } from 'lucide-react';
+import { Calculator, ArrowRight, CheckCircle2, Loader2, Camera, Video, Users, Plane, Check, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,8 @@ const RATE_MIRRORLESS = 10000;
 const RATE_DSLR = 7000;
 const RATE_FEMALE_PHOTOGRAPHER = 10000;
 const RATE_DRONE = 5000;
+const RATE_INDIAN_ALBUM_1 = 12000;
+const RATE_INDIAN_ALBUM_2 = 22000; // Special bundle discount on 2
 
 const STANDARD_EVENTS = ['Mehndi', 'Barat', 'Walima'];
 
@@ -14,7 +16,7 @@ export function QuickCalculator() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Events and Days
+  // Events and Days (1 to 5 days)
   const [selectedEvents, setSelectedEvents] = useState<string[]>(['Barat']);
   const [days, setDays] = useState(1);
   
@@ -24,6 +26,7 @@ export function QuickCalculator() {
   const [dslrCameras, setDslrCameras] = useState(0);
   const [femalePhotographers, setFemalePhotographers] = useState(0);
   const [drones, setDrones] = useState(0);
+  const [indianAlbums, setIndianAlbums] = useState(0);
 
   // Venue
   const [venue, setVenue] = useState('Hasilpur');
@@ -45,49 +48,42 @@ export function QuickCalculator() {
     }
   }, [user]);
 
-  // Toggle Mehndi, Barat, Walima buttons and sync with days slider
+  // Toggle Mehndi, Barat, Walima buttons and accurately sync with days
   const toggleEvent = (event: string) => {
     let nextEvents: string[];
     if (selectedEvents.includes(event)) {
+      // If clicking already selected event, remove it (keep at least 1 event selected)
+      if (selectedEvents.length === 1) {
+        return; // Don't allow 0 events
+      }
       nextEvents = selectedEvents.filter(e => e !== event);
     } else {
       nextEvents = [...selectedEvents, event];
     }
-    setSelectedEvents(nextEvents);
     
-    // Automatically update days to reflect number of selected events
-    if (nextEvents.length > 0) {
-      setDays(nextEvents.length);
-    } else {
-      setDays(1);
-    }
+    // Sort in natural order: Mehndi -> Barat -> Walima
+    nextEvents.sort((a, b) => STANDARD_EVENTS.indexOf(a) - STANDARD_EVENTS.indexOf(b));
+    setSelectedEvents(nextEvents);
+    setDays(nextEvents.length);
   };
 
-  // Slider change handler for Days:
-  // When slider is moved back (e.g. from 3 to 2, or 2 to 1), unselect excess buttons so they stay in sync
+  // Slider change handler for Days (1 to 5):
+  // Deterministic lockstep:
+  // 1 -> Barat
+  // 2 -> Mehndi, Barat
+  // 3 -> Mehndi, Barat, Walima
+  // 4 -> Mehndi, Barat, Walima (+ 1 Extra Day)
+  // 5 -> Mehndi, Barat, Walima (+ 2 Extra Days)
   const handleDaysChange = (newDays: number) => {
-    setDays(newDays);
+    const clamped = Math.max(1, Math.min(5, newDays));
+    setDays(clamped);
 
-    if (newDays >= 3) {
-      // All 3 wedding events selected
+    if (clamped >= 3) {
       setSelectedEvents(['Mehndi', 'Barat', 'Walima']);
-    } else if (newDays === 2) {
-      // Keep only 2 events: if 3 were selected, drop the last one (Walima)
-      if (selectedEvents.length >= 2) {
-        setSelectedEvents(selectedEvents.slice(0, 2));
-      } else if (selectedEvents.length === 1) {
-        const remaining = STANDARD_EVENTS.filter(e => !selectedEvents.includes(e));
-        setSelectedEvents([...selectedEvents, remaining[0] || 'Walima']);
-      } else {
-        setSelectedEvents(['Mehndi', 'Barat']);
-      }
-    } else if (newDays === 1) {
-      // Keep only 1 event (unselect the other 2)
-      if (selectedEvents.length >= 1) {
-        setSelectedEvents([selectedEvents[0]]);
-      } else {
-        setSelectedEvents(['Barat']);
-      }
+    } else if (clamped === 2) {
+      setSelectedEvents(['Mehndi', 'Barat']);
+    } else {
+      setSelectedEvents(['Barat']);
     }
   };
 
@@ -97,26 +93,35 @@ export function QuickCalculator() {
   // Mirrorless: Rs. 10,000 / day
   // DSLR: Rs. 7,000 / day
   // Female Photographer: Rs. 10,000 / day
-  // Drone: Rs. 5,000 / day
+  // Drone: 0 = No Drone (Rs. 0), 1 = Barat (Rs. 5,000), 2 = Walima (Rs. 5,000), 3 = Barat & Walima (Rs. 10,000)
+  // Indian Album: 1 = Rs. 12,000, 2 = Rs. 22,000 (Rs. 2,000 bundle discount!), 3 = Rs. 32,000 (Save Rs. 4,000!)
   // Chistian: Rs. 5,000 extra
   // Others: Travel charges depend on distance (informed on contact)
+  const indianAlbumCost = useMemo(() => {
+    if (indianAlbums === 1) return RATE_INDIAN_ALBUM_1;
+    if (indianAlbums === 2) return RATE_INDIAN_ALBUM_2; // Rs. 2,000 discount
+    if (indianAlbums >= 3) return RATE_INDIAN_ALBUM_2 + (indianAlbums - 2) * 10000;
+    return 0;
+  }, [indianAlbums]);
+
   const estimatedPrice = useMemo(() => {
     const dailyEquipmentRate = 
       (mirrorlessCameras * RATE_MIRRORLESS) +
       (dslrCameras * RATE_DSLR) +
-      (femalePhotographers * RATE_FEMALE_PHOTOGRAPHER) +
-      (drones * RATE_DRONE);
+      (femalePhotographers * RATE_FEMALE_PHOTOGRAPHER);
     
-    let total = dailyEquipmentRate * days;
+    const droneCost = drones === 1 ? 5000 : drones === 2 ? 5000 : drones === 3 ? 10000 : 0;
+    
+    let total = (dailyEquipmentRate * days) + droneCost + indianAlbumCost;
 
-    // Chistian is Rs. 5,000 extra (5k)
+    // Chistian is Rs. 5,000 extra
     // Others depends on distance (informed to client according to distance, +0 base)
     if (venue === 'Chistian') {
       total += 5000;
     }
     
     return total;
-  }, [days, mirrorlessCameras, dslrCameras, femalePhotographers, drones, venue]);
+  }, [days, mirrorlessCameras, dslrCameras, femalePhotographers, drones, indianAlbumCost, venue]);
 
   // Check for pending quote after login
   useEffect(() => {
@@ -164,7 +169,7 @@ export function QuickCalculator() {
     const finalPhone = contactPhone.trim() || user?.phone || '';
 
     if (!finalName) {
-      setFormError('Baraye meharbani apna Naam darj karein.');
+      setFormError('Baraye meharbani apna Name darj karein.');
       return;
     }
     if (!finalPhone || finalPhone.length < 7) {
@@ -173,7 +178,7 @@ export function QuickCalculator() {
     }
 
     if (totalCameras === 0) {
-      setFormError('Baraye meharbani kam az kam 1 camera (Mirrorless ya DSLR) zaroor select karein.');
+      setFormError('Please select at least 1 camera (Mirrorless or DSLR).');
       return;
     }
 
@@ -188,6 +193,12 @@ export function QuickCalculator() {
       cameraTypeDesc = `${dslrCameras}x DSLR`;
     }
 
+    const droneCoverageDesc = 
+      drones === 0 ? 'No Drone' : 
+      drones === 1 ? 'Barat (Rs. 5,000)' : 
+      drones === 2 ? 'Walima (Rs. 5,000)' : 
+      'Barat & Walima (Rs. 10,000)';
+
     const quoteData = {
       days,
       events: selectedEvents,
@@ -197,6 +208,9 @@ export function QuickCalculator() {
       cameras: totalCameras,
       femalePhotographers,
       drones,
+      droneCoverage: droneCoverageDesc,
+      indianAlbums,
+      indianAlbumCost,
       venue,
       delivery: 'Cloud (Google Drive Link)',
       estimatedPrice,
@@ -222,7 +236,7 @@ export function QuickCalculator() {
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium">Quick Wedding Calculator</h2>
             <p className="text-white/60 text-xs sm:text-sm mt-1">
-              Events, Mirrorless / DSLR cameras, female crew aur aerial drone select karein aur instant estimated quotation hasil karein.
+              Select events, cameras, female crew and drone to get an instant quotation estimate.
             </p>
           </div>
         </div>
@@ -235,10 +249,10 @@ export function QuickCalculator() {
             <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-xs uppercase tracking-widest text-white/70 font-semibold">
-                  Wedding Events Select Karein
+                  Select Wedding Events
                 </label>
                 <div className="bg-[#f2a900]/20 border border-[#f2a900]/40 px-2.5 py-1 rounded-full text-xs font-bold text-[#f2a900] flex items-center gap-1.5 shadow-sm">
-                  <span>{days} {days === 1 ? 'Din Ka Shoot' : 'Dino Ka Shoot'}</span>
+                  <span>{days} {days === 1 ? 'Day Shoot' : 'Days Shoot'}</span>
                 </div>
               </div>
 
@@ -264,29 +278,31 @@ export function QuickCalculator() {
                 })}
               </div>
 
-              {/* Slider for days - synced bidirectionally with buttons */}
+              {/* Slider for days (Max 5 Days) - synced bidirectionally with buttons */}
               <div>
                 <div className="flex justify-between text-xs text-white/60 mb-2">
-                  <span>Shoot Days (Dino Ki Tadaad)</span>
+                  <span>Shoot Days</span>
                   <span className="text-white font-medium">
                     {days} {days === 1 ? 'Day' : 'Days'}
-                    {selectedEvents.length > 0 && ` (${selectedEvents.join(' + ')})`}
+                    {days <= 3 && selectedEvents.length > 0 && ` (${selectedEvents.join(' + ')})`}
+                    {days === 4 && ` (${selectedEvents.join(' + ')} + 1 Extra Day)`}
+                    {days === 5 && ` (${selectedEvents.join(' + ')} + 2 Extra Days)`}
                   </span>
                 </div>
                 <input 
                   type="range" 
                   min="1" 
-                  max="7" 
+                  max="5" 
                   value={days}
                   onChange={(e) => handleDaysChange(parseInt(e.target.value, 10))}
                   className="w-full accent-[#f2a900] h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-white/40 mt-1">
-                  <span>1 Din</span>
-                  <span>2 Din</span>
-                  <span>3 Din</span>
-                  <span>5 Din</span>
-                  <span>7 Din</span>
+                  <span>1 Day</span>
+                  <span>2 Days</span>
+                  <span>3 Days</span>
+                  <span>4 Days</span>
+                  <span>5 Days</span>
                 </div>
               </div>
             </div>
@@ -320,7 +336,7 @@ export function QuickCalculator() {
                 </div>
               </div>
 
-              {/* Quick count buttons for easy tapping */}
+              {/* Quick count buttons */}
               <div className="flex gap-2 mt-2.5">
                 {[0, 1, 2, 3, 4].map((count) => (
                   <button
@@ -435,7 +451,7 @@ export function QuickCalculator() {
               </div>
             </div>
 
-            {/* 5. Slider: Drone Camera (Rs. 5,000 / Day - Max 2) */}
+            {/* 5. Drone Camera Section (0: No Drone, 1: Barat, 2: Walima, 3: Barat & Walima) */}
             <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
@@ -443,41 +459,122 @@ export function QuickCalculator() {
                   Drone Camera (Aerial 4K Shots)
                 </span>
                 <span className="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                  Rs. 5,000 / Day
+                  {drones === 0 ? '0 No Drone' : drones === 1 ? 'Barat (+Rs. 5,000)' : drones === 2 ? 'Walima (+Rs. 5,000)' : 'Barat & Walima (+Rs. 10,000)'}
                 </span>
               </div>
               <p className="text-[11px] text-white/50 mb-3">
-                Baraat arrival, fireworks aur grand venue entry ke cinematic 4K hawaai shots.
+                Cinematic aerial 4K shots for bridal entry, fireworks aur venue views.
               </p>
               
               <div className="flex items-center gap-4">
                 <input 
                   type="range" 
                   min="0" 
-                  max="2" 
+                  max="3" 
                   value={drones}
                   onChange={(e) => setDrones(parseInt(e.target.value, 10))}
                   className="w-full accent-cyan-400 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="min-w-[70px] text-right font-bold text-sm text-cyan-300">
-                  {drones} {drones === 1 ? 'Drone' : 'Drones'}
+                <div className="min-w-[130px] text-right font-bold text-xs sm:text-sm text-cyan-300">
+                  {drones === 0 ? '0 No Drone' : drones === 1 ? 'Barat (Rs. 5k)' : drones === 2 ? 'Walima (Rs. 5k)' : 'Barat & Walima (10k)'}
                 </div>
               </div>
 
-              {/* Quick count buttons */}
-              <div className="flex gap-2 mt-2.5">
-                {[0, 1, 2].map((count) => (
+              {/* Options: 0 No Drone, Barat, Walima, Barat & Walima */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+                {[
+                  { val: 0, label: '0 No Drone', priceTag: 'Rs. 0' },
+                  { val: 1, label: 'Barat', priceTag: 'Rs. 5,000' },
+                  { val: 2, label: 'Walima', priceTag: 'Rs. 5,000' },
+                  { val: 3, label: 'Barat & Walima', priceTag: 'Rs. 10,000' }
+                ].map((opt) => (
                   <button
-                    key={count}
+                    key={opt.val}
                     type="button"
-                    onClick={() => setDrones(count)}
-                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
-                      drones === count 
-                        ? 'bg-cyan-500 text-black font-bold' 
-                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    onClick={() => setDrones(opt.val)}
+                    className={`py-2 px-2 rounded-xl text-[11px] transition-all flex flex-col items-center justify-center cursor-pointer ${
+                      drones === opt.val 
+                        ? 'bg-cyan-500 text-black font-bold shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
+                        : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
                     }`}
                   >
-                    {count === 0 ? 'No Drone (0)' : `${count} Drone`}
+                    <span className="font-semibold">{opt.label}</span>
+                    <span className={`text-[10px] ${drones === opt.val ? 'text-black/80 font-bold' : 'text-cyan-400/80'}`}>{opt.priceTag}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 6. Indian Photobook / Album Section (1 = Rs. 12,000, 2 = Rs. 22,000 with discount) */}
+            <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-emerald-400" />
+                  Royal Indian Album (Printed Photobook)
+                </span>
+                <span className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  {indianAlbums === 0 
+                    ? 'None (Rs. 0)' 
+                    : indianAlbums === 1 
+                    ? '1 Album (Rs. 12,000)' 
+                    : indianAlbums === 2 
+                    ? '2 Albums (Rs. 22,000 • Save Rs. 2,000!)' 
+                    : `${indianAlbums} Albums (Rs. ${indianAlbumCost.toLocaleString()} • Save Rs. 4,000!)`}
+                </span>
+              </div>
+              <p className="text-[11px] text-white/50 mb-3">
+                High-end crystal acrylic / leather cover with rigid lay-flat pages, metallic sheet printing & presentation box.
+              </p>
+              
+              <div className="flex items-center gap-4">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="3" 
+                  value={indianAlbums}
+                  onChange={(e) => setIndianAlbums(parseInt(e.target.value, 10))}
+                  className="w-full accent-emerald-400 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="min-w-[130px] text-right font-bold text-xs sm:text-sm text-emerald-300">
+                  {indianAlbums === 0 
+                    ? 'None (0)' 
+                    : indianAlbums === 1 
+                    ? '1 Album (12k)' 
+                    : indianAlbums === 2 
+                    ? '2 Albums (22k ⭐)' 
+                    : `${indianAlbums} Albums (${(indianAlbumCost/1000).toFixed(0)}k)`}
+                </div>
+              </div>
+
+              {/* Options: 0 None, 1 Album (12k), 2 Albums (22k Discount), 3 Albums */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+                {[
+                  { val: 0, label: 'None (0)', priceTag: 'Rs. 0', discountTag: null },
+                  { val: 1, label: '1 Album', priceTag: 'Rs. 12,000', discountTag: 'Regular' },
+                  { val: 2, label: '2 Albums', priceTag: 'Rs. 22,000', discountTag: 'Save Rs. 2,000' },
+                  { val: 3, label: '3 Albums', priceTag: 'Rs. 32,000', discountTag: 'Save Rs. 4,000' }
+                ].map((opt) => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setIndianAlbums(opt.val)}
+                    className={`py-2 px-2 rounded-xl text-[11px] transition-all flex flex-col items-center justify-center cursor-pointer relative ${
+                      indianAlbums === opt.val 
+                        ? 'bg-emerald-500 text-black font-bold shadow-[0_0_12px_rgba(16,185,129,0.35)]' 
+                        : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <span className="font-semibold">{opt.label}</span>
+                    <span className={`text-[10px] ${indianAlbums === opt.val ? 'text-black/80 font-bold' : 'text-emerald-400/90'}`}>{opt.priceTag}</span>
+                    {opt.discountTag && (
+                      <span className={`text-[9px] px-1.5 py-0.5 mt-0.5 rounded-md font-medium ${
+                        indianAlbums === opt.val 
+                          ? 'bg-black/20 text-black font-bold' 
+                          : opt.val >= 2 ? 'bg-emerald-400/20 text-emerald-300' : 'text-white/40'
+                      }`}>
+                        {opt.discountTag}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -532,7 +629,7 @@ export function QuickCalculator() {
                   {estimatedPrice.toLocaleString()}
                 </div>
                 <p className="text-white/40 text-[11px] uppercase tracking-wider mb-4">
-                  *Mirrorless (Rs. 10k), DSLR (Rs. 7k), Female Staff (Rs. 10k), Drone (Rs. 5k) / Din.
+                  *Mirrorless (Rs. 10k), DSLR (Rs. 7k), Female Staff (Rs. 10k), Drone (Rs. 5k) / Day.
                 </p>
 
                 {venue === 'Others' && (
@@ -551,7 +648,7 @@ export function QuickCalculator() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/50">Duration:</span>
-                    <span className="font-semibold text-[#f2a900]">{days} {days === 1 ? 'Din (1 Day)' : `${days} Din`}</span>
+                    <span className="font-semibold text-[#f2a900]">{days} {days === 1 ? 'Day' : 'Days'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/50">Mirrorless (Rs. 10k):</span>
@@ -572,9 +669,19 @@ export function QuickCalculator() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/50">Drone (Rs. 5k):</span>
+                    <span className="text-white/50">Drone Coverage:</span>
                     <span className={`font-semibold ${drones > 0 ? 'text-cyan-300' : 'text-white/40'}`}>
-                      {drones > 0 ? `${drones} Drone (Rs. ${(drones * RATE_DRONE * days).toLocaleString()})` : 'None'}
+                      {drones === 0 ? '0 No Drone' : drones === 1 ? 'Barat (Rs. 5,000)' : drones === 2 ? 'Walima (Rs. 5,000)' : 'Barat & Walima (Rs. 10,000)'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/50">Indian Album:</span>
+                    <span className={`font-semibold ${indianAlbums > 0 ? 'text-emerald-400' : 'text-white/40'}`}>
+                      {indianAlbums === 0 
+                        ? 'None' 
+                        : indianAlbums === 1 
+                        ? '1 Album (Rs. 12,000)' 
+                        : `${indianAlbums} Albums (Rs. ${indianAlbumCost.toLocaleString()}${indianAlbums === 2 ? ' • Save Rs. 2k' : ''})`}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -593,12 +700,12 @@ export function QuickCalculator() {
                 {!submitted && (
                   <div className="space-y-3 mb-6 bg-white/[0.03] border border-white/10 p-4 rounded-xl">
                     <p className="text-[11px] uppercase tracking-wider text-[#f2a900] font-semibold">
-                      Aapki Rabta Tafseelat (Your Contact Details)
+                      Your Contact Details (Rabta Tafseelat)
                     </p>
                     <div>
                       <input
                         type="text"
-                        placeholder="Aapka Naam (e.g. Ali Khan)"
+                        placeholder="Your Name (e.g. Ali Khan)"
                         value={contactName}
                         onChange={(e) => { setContactName(e.target.value); setFormError(''); }}
                         className="w-full bg-black/40 border border-white/10 focus:border-[#f2a900] rounded-lg px-3.5 py-2.5 text-xs text-white focus:outline-none transition-colors"
@@ -624,17 +731,17 @@ export function QuickCalculator() {
                 <div className="space-y-4">
                   <div className="bg-green-500/20 text-green-300 py-4 px-5 rounded-xl border border-green-500/30 text-center">
                     <div className="flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm mb-1 text-green-400">
-                      <CheckCircle2 className="w-5 h-5" /> Quote Kamiyabi Se Send Ho Gayi!
+                      <CheckCircle2 className="w-5 h-5" /> Quote Sent Successfully!
                     </div>
                     <p className="text-xs text-white/70">
-                      Aapki quote request Admin Panel ke <strong>Quotes</strong> section mein receive ho chuki hai. Hamari team foran aapse rabta karegi.
+                      Aapki quote request receive ho chuki hai. Hamari team foran aapse rabta karegi.
                     </p>
                   </div>
 
                   {submittedQuoteData && (
                     <a
                       href={`https://wa.me/923006103262?text=${encodeURIComponent(
-                        `Assalam-o-Alaikum MuzFrame Studio! Main ne website calculator se quotation banayi hai:\n\n*Name:* ${submittedQuoteData.clientName}\n*Phone:* ${submittedQuoteData.clientPhone}\n*Events:* ${submittedQuoteData.events?.join(', ') || 'Custom'}\n*Days:* ${submittedQuoteData.days} Din\n*Mirrorless Cameras (Rs. 10k/day):* ${submittedQuoteData.mirrorless || 0}\n*DSLR Cameras (Rs. 7k/day):* ${submittedQuoteData.dslr || 0}\n*Female Crew (Rs. 10k/day):* ${submittedQuoteData.femalePhotographers || 0}\n*Drone (Rs. 5k/day):* ${submittedQuoteData.drones || 0}\n*City:* ${submittedQuoteData.venue}${submittedQuoteData.venue === 'Others' ? ' (Distance ke mutabiq travel charges tay honge)' : submittedQuoteData.venue === 'Chistian' ? ' (+ Rs. 5,000 travel)' : ''}\n*Estimated Price:* Rs. ${Number(submittedQuoteData.estimatedPrice || 0).toLocaleString()}\n\nBaraye meharbani booking details confirm karein.`
+                        `Assalam-o-Alaikum MuzFrame Studio! Main ne website calculator se quotation banayi hai:\n\n*Name:* ${submittedQuoteData.clientName}\n*Phone:* ${submittedQuoteData.clientPhone}\n*Events:* ${submittedQuoteData.events?.join(', ') || 'Custom'}\n*Days:* ${submittedQuoteData.days} Days\n*Mirrorless Cameras (Rs. 10k/day):* ${submittedQuoteData.mirrorless || 0}\n*DSLR Cameras (Rs. 7k/day):* ${submittedQuoteData.dslr || 0}\n*Female Crew (Rs. 10k/day):* ${submittedQuoteData.femalePhotographers || 0}\n*Drone:* ${submittedQuoteData.droneCoverage || (submittedQuoteData.drones === 1 ? 'Barat (Rs. 5,000)' : submittedQuoteData.drones === 2 ? 'Walima (Rs. 5,000)' : submittedQuoteData.drones === 3 ? 'Barat & Walima (Rs. 10,000)' : 'No Drone')}\n*Indian Album:* ${submittedQuoteData.indianAlbums > 0 ? `${submittedQuoteData.indianAlbums}x Album (Rs. ${(submittedQuoteData.indianAlbumCost || 0).toLocaleString()}${submittedQuoteData.indianAlbums === 2 ? ' • Special Discount' : ''})` : 'None'}\n*City:* ${submittedQuoteData.venue}${submittedQuoteData.venue === 'Others' ? ' (Distance ke mutabiq travel charges tay honge)' : submittedQuoteData.venue === 'Chistian' ? ' (+ Rs. 5,000 travel)' : ''}\n*Estimated Price:* Rs. ${Number(submittedQuoteData.estimatedPrice || 0).toLocaleString()}\n\nBaraye meharbani booking details confirm karein.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -649,7 +756,7 @@ export function QuickCalculator() {
                     onClick={() => { setSubmitted(false); setSubmittedQuoteData(null); }}
                     className="w-full text-center text-white/50 hover:text-white text-xs underline cursor-pointer py-1"
                   >
-                    Nayi Quote Calculate Karein
+                    Calculate Another Quote
                   </button>
                 </div>
               ) : (
@@ -660,9 +767,9 @@ export function QuickCalculator() {
                   className="w-full bg-[#f2a900] hover:bg-white text-black py-4 px-6 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-3 transition-all shadow-[0_0_25px_rgba(242,169,0,0.35)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Process Ho Raha Hai...</>
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
                   ) : (
-                    <>Ye Package Request Karein <ArrowRight className="w-5 h-5" /></>
+                    <>Request This Quote <ArrowRight className="w-5 h-5" /></>
                   )}
                 </button>
               )}

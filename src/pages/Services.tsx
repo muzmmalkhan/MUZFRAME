@@ -17,7 +17,7 @@ export function Services() {
         {/* Individual Services */}
         <div className="mb-32">
           <div className="text-center mb-16">
-            <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Hamari Khadmaat</p>
+            <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Our Services</p>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Core <span className="luxury-gradient italic">Services</span></h2>
             <p className="text-white/60 max-w-2xl mx-auto text-lg">Shadi ke shoot se lekar commercial projects tak — specialized creative services aapke event ke liye.</p>
           </div>

@@ -14,7 +14,7 @@ export function Gallery() {
     <div className="pt-32 pb-24 min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-16">
-          <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Hamara Latest Kaam</p>
+          <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Our Latest Work</p>
           <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6">Our <span className="luxury-gradient italic">Portfolio</span></h1>
           <p className="text-white/60 max-w-2xl mx-auto text-lg">
             Shadiyon ke grand celebrations se lekar royal bridal portraits tak — har frame ek khoobsurat yaad aur kahani bayan karta hai.
@@ -37,7 +37,7 @@ export function Gallery() {
                 className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 bg-[#1a1a1a]"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <span className="text-white font-serif italic text-lg shadow-sm">Shoot Dekhein • View</span>
+                <span className="text-white font-serif italic text-lg shadow-sm">View Shoot</span>
               </div>
             </motion.div>
           ))}

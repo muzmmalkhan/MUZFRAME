@@ -1053,7 +1053,12 @@ export function AdminDashboard() {
                         )}
                         {q.drones > 0 && (
                           <span className="bg-cyan-500/15 border border-cyan-500/30 px-3 py-1 rounded-lg text-xs text-cyan-300">
-                            Drone: <strong>{q.drones} {q.drones === 1 ? 'Unit' : 'Units'}</strong>
+                            Drone: <strong>{q.droneCoverage || (q.drones === 1 ? 'Barat (Rs. 5k)' : q.drones === 2 ? 'Walima (Rs. 5k)' : q.drones === 3 ? 'Barat & Walima (Rs. 10k)' : 'Included')}</strong>
+                          </span>
+                        )}
+                        {q.indianAlbums > 0 && (
+                          <span className="bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 rounded-lg text-xs text-emerald-300">
+                            Indian Album: <strong>{q.indianAlbums}x {q.indianAlbums === 2 ? '(Rs. 22k Disc.)' : `(Rs. ${(q.indianAlbumCost || (q.indianAlbums === 1 ? 12000 : 22000)).toLocaleString()})`}</strong>
                           </span>
                         )}
                         {q.canvas && q.canvas !== "None" && (
