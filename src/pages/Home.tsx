@@ -69,7 +69,7 @@ export function Home() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#f2a900]/30 text-[#f2a900] text-xs uppercase tracking-widest font-semibold mb-6"
           >
             <Camera className="w-3.5 h-3.5" />
-            <span>Hasilpur & Chistian Ka Trusted Studio</span>
+            <span>Hasilpur Ka Trusted Studio</span>
           </motion.div>
 
           <motion.h1 
