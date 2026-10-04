@@ -125,13 +125,13 @@ export function Home() {
         </div>
       </section>
 
-      {/* Chosen By Section (Bajwas Collection, Modern Cash & Carry, Shamsheer) */}
-      <TrustedBrandsSection />
-
       {/* Quick Calculator Section */}
       <section id="quick-calculator" className="bg-black py-24 border-t border-white/5 scroll-mt-12">
         <QuickCalculator />
       </section>
+
+      {/* Chosen By Section (Modern Cash & Carry) */}
+      <TrustedBrandsSection />
 
       {/* Video Reel Section */}
       <section className="relative py-32 bg-[#0a0a0a] overflow-hidden">

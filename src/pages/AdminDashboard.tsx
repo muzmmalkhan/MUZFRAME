@@ -1034,8 +1034,18 @@ export function AdminDashboard() {
                           </span>
                         )}
                         <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">
-                          Cameras: <strong className="text-white">{q.cameras || 1} {q.cameraType ? `(${q.cameraType})` : ''}</strong>
+                          Cameras: <strong className="text-white">{q.cameras || (q.mirrorless || 0) + (q.dslr || 0) || 1} {q.cameraType ? `(${q.cameraType})` : ''}</strong>
                         </span>
+                        {q.mirrorless > 0 && (
+                          <span className="bg-[#f2a900]/15 border border-[#f2a900]/30 px-3 py-1 rounded-lg text-xs text-[#f2a900]">
+                            Mirrorless: <strong>{q.mirrorless}x</strong>
+                          </span>
+                        )}
+                        {q.dslr > 0 && (
+                          <span className="bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-lg text-xs text-amber-300">
+                            DSLR: <strong>{q.dslr}x</strong>
+                          </span>
+                        )}
                         {q.femalePhotographers > 0 && (
                           <span className="bg-pink-500/15 border border-pink-500/30 px-3 py-1 rounded-lg text-xs text-pink-300">
                             Female Crew: <strong>{q.femalePhotographers}</strong>

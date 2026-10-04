@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calculator, ArrowRight, CheckCircle2, Loader2, Camera, Video, Users, Plane, Check } from 'lucide-react';
+import { Calculator, ArrowRight, CheckCircle2, Loader2, Camera, Video, Users, Plane, Check, Minus, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+
+const RATE_MIRRORLESS = 10000;
+const RATE_DSLR = 7000;
+const RATE_FEMALE_PHOTOGRAPHER = 10000;
+const RATE_DRONE = 5000;
+
+const STANDARD_EVENTS = ['Mehndi', 'Barat', 'Walima'];
 
 export function QuickCalculator() {
   const { user } = useAuth();
@@ -11,17 +18,15 @@ export function QuickCalculator() {
   const [selectedEvents, setSelectedEvents] = useState<string[]>(['Barat']);
   const [days, setDays] = useState(1);
   
-  // Cameras & Equipment
-  const [cameraType, setCameraType] = useState<'DSLR' | 'Mirrorless'>('Mirrorless');
-  const [cameras, setCameras] = useState(1);
-  
-  // Additional Sliders: Female Photographer (max 3) & Drone
+  // Equipment Sliders
+  // 1 Mirrorless = 10000, DSLR = 7000, Female Photographer = 10000, Drone = 5000
+  const [mirrorlessCameras, setMirrorlessCameras] = useState(1);
+  const [dslrCameras, setDslrCameras] = useState(0);
   const [femalePhotographers, setFemalePhotographers] = useState(0);
   const [drones, setDrones] = useState(0);
 
-  // Venue & Delivery
+  // Venue
   const [venue, setVenue] = useState('Hasilpur');
-  const [delivery, setDelivery] = useState('Cloud (Google Drive Link)');
   
   // Client contact information for quote submission
   const [contactName, setContactName] = useState(user?.name || '');
@@ -40,7 +45,7 @@ export function QuickCalculator() {
     }
   }, [user]);
 
-  // Toggle Mehndi, Barat, Walima and sync days
+  // Toggle Mehndi, Barat, Walima buttons and sync with days slider
   const toggleEvent = (event: string) => {
     let nextEvents: string[];
     if (selectedEvents.includes(event)) {
@@ -58,34 +63,60 @@ export function QuickCalculator() {
     }
   };
 
+  // Slider change handler for Days:
+  // When slider is moved back (e.g. from 3 to 2, or 2 to 1), unselect excess buttons so they stay in sync
+  const handleDaysChange = (newDays: number) => {
+    setDays(newDays);
+
+    if (newDays >= 3) {
+      // All 3 wedding events selected
+      setSelectedEvents(['Mehndi', 'Barat', 'Walima']);
+    } else if (newDays === 2) {
+      // Keep only 2 events: if 3 were selected, drop the last one (Walima)
+      if (selectedEvents.length >= 2) {
+        setSelectedEvents(selectedEvents.slice(0, 2));
+      } else if (selectedEvents.length === 1) {
+        const remaining = STANDARD_EVENTS.filter(e => !selectedEvents.includes(e));
+        setSelectedEvents([...selectedEvents, remaining[0] || 'Walima']);
+      } else {
+        setSelectedEvents(['Mehndi', 'Barat']);
+      }
+    } else if (newDays === 1) {
+      // Keep only 1 event (unselect the other 2)
+      if (selectedEvents.length >= 1) {
+        setSelectedEvents([selectedEvents[0]]);
+      } else {
+        setSelectedEvents(['Barat']);
+      }
+    }
+  };
+
+  const totalCameras = mirrorlessCameras + dslrCameras;
+
+  // Calculation logic based on user's exact rates:
+  // Mirrorless: Rs. 10,000 / day
+  // DSLR: Rs. 7,000 / day
+  // Female Photographer: Rs. 10,000 / day
+  // Drone: Rs. 5,000 / day
+  // Chistian: Rs. 5,000 extra
+  // Others: Travel charges depend on distance (informed on contact)
   const estimatedPrice = useMemo(() => {
-    // Camera base rate
-    const cameraBase = cameraType === 'Mirrorless' ? 28000 : 22000;
-    const extraCameraRate = cameraType === 'Mirrorless' ? 18000 : 14000;
+    const dailyEquipmentRate = 
+      (mirrorlessCameras * RATE_MIRRORLESS) +
+      (dslrCameras * RATE_DSLR) +
+      (femalePhotographers * RATE_FEMALE_PHOTOGRAPHER) +
+      (drones * RATE_DRONE);
     
-    let total = days * cameraBase;
-    if (cameras > 1) {
-      total += (cameras - 1) * days * extraCameraRate;
-    }
+    let total = dailyEquipmentRate * days;
 
-    // Female Photographers rate per day
-    if (femalePhotographers > 0) {
-      total += femalePhotographers * days * 15000;
+    // Chistian is Rs. 5,000 extra (5k)
+    // Others depends on distance (informed to client according to distance, +0 base)
+    if (venue === 'Chistian') {
+      total += 5000;
     }
-
-    // Drone cameras rate per day
-    if (drones > 0) {
-      total += drones * days * 12000;
-    }
-    
-    if (venue === 'Chistian') total += 10000;
-    else if (venue === 'Others') total += 50000;
-    
-    if (delivery === 'Local Pickup (USB Drive)') total += 2000;
-    else if (delivery === 'Cloud (Google Drive Link)') total += 3000;
     
     return total;
-  }, [days, cameras, cameraType, femalePhotographers, drones, venue, delivery]);
+  }, [days, mirrorlessCameras, dslrCameras, femalePhotographers, drones, venue]);
 
   // Check for pending quote after login
   useEffect(() => {
@@ -141,17 +172,33 @@ export function QuickCalculator() {
       return;
     }
 
+    if (totalCameras === 0) {
+      setFormError('Baraye meharbani kam az kam 1 camera (Mirrorless ya DSLR) zaroor select karein.');
+      return;
+    }
+
     setFormError('');
+
+    let cameraTypeDesc = '';
+    if (mirrorlessCameras > 0 && dslrCameras > 0) {
+      cameraTypeDesc = `${mirrorlessCameras}x Mirrorless + ${dslrCameras}x DSLR`;
+    } else if (mirrorlessCameras > 0) {
+      cameraTypeDesc = `${mirrorlessCameras}x Mirrorless`;
+    } else {
+      cameraTypeDesc = `${dslrCameras}x DSLR`;
+    }
 
     const quoteData = {
       days,
       events: selectedEvents,
-      cameraType,
-      cameras,
+      mirrorless: mirrorlessCameras,
+      dslr: dslrCameras,
+      cameraType: cameraTypeDesc,
+      cameras: totalCameras,
       femalePhotographers,
       drones,
       venue,
-      delivery,
+      delivery: 'Cloud (Google Drive Link)',
       estimatedPrice,
       clientName: finalName,
       clientPhone: finalPhone,
@@ -162,8 +209,8 @@ export function QuickCalculator() {
   };
 
   return (
-    <div className="mt-20 max-w-5xl mx-auto bg-[#0a0a0a] border border-[#f2a900]/30 rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_0_50px_rgba(242,169,0,0.1)] relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-8 opacity-5">
+    <div className="max-w-5xl mx-auto bg-[#0a0a0a] border border-[#f2a900]/30 rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_0_50px_rgba(242,169,0,0.1)] relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
         <Calculator className="w-56 h-56 text-[#f2a900]" />
       </div>
       
@@ -174,7 +221,9 @@ export function QuickCalculator() {
           </div>
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium">Quick Wedding Calculator</h2>
-            <p className="text-white/60 text-xs sm:text-sm mt-1">Shoot days, cameras, female crew aur aerial drone select karein aur instant estimated quotation hasil karein.</p>
+            <p className="text-white/60 text-xs sm:text-sm mt-1">
+              Events, Mirrorless / DSLR cameras, female crew aur aerial drone select karein aur instant estimated quotation hasil karein.
+            </p>
           </div>
         </div>
 
@@ -195,7 +244,7 @@ export function QuickCalculator() {
 
               {/* Three multi-select buttons: Mehndi, Barat, Walima */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
-                {(['Mehndi', 'Barat', 'Walima'] as const).map((evt) => {
+                {(STANDARD_EVENTS as readonly string[]).map((evt) => {
                   const isSelected = selectedEvents.includes(evt);
                   return (
                     <button
@@ -215,7 +264,7 @@ export function QuickCalculator() {
                 })}
               </div>
 
-              {/* Slider for days with dynamic display */}
+              {/* Slider for days - synced bidirectionally with buttons */}
               <div>
                 <div className="flex justify-between text-xs text-white/60 mb-2">
                   <span>Shoot Days (Dino Ki Tadaad)</span>
@@ -229,11 +278,12 @@ export function QuickCalculator() {
                   min="1" 
                   max="7" 
                   value={days}
-                  onChange={(e) => setDays(parseInt(e.target.value))}
+                  onChange={(e) => handleDaysChange(parseInt(e.target.value, 10))}
                   className="w-full accent-[#f2a900] h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-white/40 mt-1">
                   <span>1 Din</span>
+                  <span>2 Din</span>
                   <span>3 Din</span>
                   <span>5 Din</span>
                   <span>7 Din</span>
@@ -241,163 +291,228 @@ export function QuickCalculator() {
               </div>
             </div>
 
-            {/* 2. Camera Type & Number of Cameras */}
-            <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="text-xs uppercase tracking-widest text-white/70 font-semibold">
-                  Camera Equipment (DSLR ya Mirrorless)
-                </label>
-                <span className="text-[11px] text-[#f2a900] font-medium">
-                  {cameraType === 'Mirrorless' ? 'Cinematic 4K 10-Bit' : 'Professional Full Frame'}
+            {/* 2. Mirrorless Camera Slider (Rs. 10,000 / Day) */}
+            <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
+                  <Video className="w-4 h-4 text-[#f2a900]" />
+                  Mirrorless Camera (4K Cinematic)
+                </span>
+                <span className="bg-[#f2a900]/15 text-[#f2a900] border border-[#f2a900]/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  Rs. 10,000 / Day
                 </span>
               </div>
-
-              {/* DSLR or Mirrorless Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCameraType('DSLR')}
-                  className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    cameraType === 'DSLR'
-                      ? 'bg-[#f2a900] text-black border-[#f2a900] shadow-[0_0_15px_rgba(242,169,0,0.3)]'
-                      : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <Camera className="w-4 h-4" />
-                  DSLR Camera
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCameraType('Mirrorless')}
-                  className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    cameraType === 'Mirrorless'
-                      ? 'bg-[#f2a900] text-black border-[#f2a900] shadow-[0_0_15px_rgba(242,169,0,0.3)]'
-                      : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <Video className="w-4 h-4" />
-                  Mirrorless Camera
-                </button>
-              </div>
-
-              {/* Number of Cameras Slider */}
-              <div className="pt-1">
-                <div className="flex justify-between text-xs uppercase tracking-widest text-white/70 font-semibold mb-2">
-                  <span>Number of {cameraType} Cameras (Kitne Cameras Chahiyein)</span>
-                  <span className="text-[#f2a900] font-bold">{cameras} {cameras === 1 ? 'Camera' : 'Cameras'}</span>
-                </div>
+              <p className="text-[11px] text-white/50 mb-3">
+                Sony FX3 / A7IV cinematic 4K video aur royal portrait coverage.
+              </p>
+              
+              <div className="flex items-center gap-4">
                 <input 
                   type="range" 
-                  min="1" 
-                  max="5" 
-                  value={cameras}
-                  onChange={(e) => setCameras(parseInt(e.target.value))}
+                  min="0" 
+                  max="4" 
+                  value={mirrorlessCameras}
+                  onChange={(e) => setMirrorlessCameras(parseInt(e.target.value, 10))}
                   className="w-full accent-[#f2a900] h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-[10px] text-white/40 mt-1">
-                  <span>1 Camera (Solo)</span>
-                  <span>3 Multi-Angle</span>
-                  <span>5 Production Setup</span>
+                <div className="min-w-[70px] text-right font-bold text-sm text-[#f2a900]">
+                  {mirrorlessCameras} {mirrorlessCameras === 1 ? 'Unit' : 'Units'}
                 </div>
               </div>
+
+              {/* Quick count buttons for easy tapping */}
+              <div className="flex gap-2 mt-2.5">
+                {[0, 1, 2, 3, 4].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setMirrorlessCameras(count)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                      mirrorlessCameras === count 
+                        ? 'bg-[#f2a900] text-black font-bold' 
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {count === 0 ? '0' : `${count}`}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* 3. Slider: Female Photographer (Max 3) */}
+            {/* 3. DSLR Camera Slider (Rs. 7,000 / Day) */}
             <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs uppercase tracking-widest text-white/70 font-semibold flex items-center gap-2">
+                <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-amber-400" />
+                  DSLR Camera (Traditional Full Frame)
+                </span>
+                <span className="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  Rs. 7,000 / Day
+                </span>
+              </div>
+              <p className="text-[11px] text-white/50 mb-3">
+                Canon / Nikon full-frame stage portraits aur traditional event coverage.
+              </p>
+              
+              <div className="flex items-center gap-4">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="4" 
+                  value={dslrCameras}
+                  onChange={(e) => setDslrCameras(parseInt(e.target.value, 10))}
+                  className="w-full accent-amber-400 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="min-w-[70px] text-right font-bold text-sm text-amber-400">
+                  {dslrCameras} {dslrCameras === 1 ? 'Unit' : 'Units'}
+                </div>
+              </div>
+
+              {/* Quick count buttons */}
+              <div className="flex gap-2 mt-2.5">
+                {[0, 1, 2, 3, 4].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setDslrCameras(count)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                      dslrCameras === count 
+                        ? 'bg-amber-400 text-black font-bold' 
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {count === 0 ? '0' : `${count}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Slider: Female Photographer (Rs. 10,000 / Day - Max 3) */}
+            <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
                   <Users className="w-4 h-4 text-pink-400" />
-                  Female Photographer (Khawateen Crew - Max 3)
+                  Female Photographer (Khawateen Crew)
                 </span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
-                  femalePhotographers > 0 ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30' : 'text-white/40'
-                }`}>
-                  {femalePhotographers === 0 
-                    ? '0 (Nahi Chahiye)' 
-                    : `${femalePhotographers} Female ${femalePhotographers === 1 ? 'Staff' : 'Staffs'}`}
+                <span className="bg-pink-500/15 text-pink-300 border border-pink-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  Rs. 10,000 / Day
                 </span>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="3" 
-                value={femalePhotographers}
-                onChange={(e) => setFemalePhotographers(parseInt(e.target.value))}
-                className="w-full accent-pink-500 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-white/40 mt-1">
-                <span>0 (None)</span>
-                <span>1 Female Staff</span>
-                <span>2 Female Staff</span>
-                <span>3 Females (Max)</span>
-              </div>
-              <p className="text-[11px] text-white/40 mt-2">
+              <p className="text-[11px] text-white/50 mb-3">
                 Dulhan ki tayyari, family portraits aur private ladies hall ke liye dedicated female photographers.
               </p>
+              
+              <div className="flex items-center gap-4">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="3" 
+                  value={femalePhotographers}
+                  onChange={(e) => setFemalePhotographers(parseInt(e.target.value, 10))}
+                  className="w-full accent-pink-500 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="min-w-[70px] text-right font-bold text-sm text-pink-300">
+                  {femalePhotographers} {femalePhotographers === 1 ? 'Staff' : 'Staffs'}
+                </div>
+              </div>
+
+              {/* Quick count buttons */}
+              <div className="flex gap-2 mt-2.5">
+                {[0, 1, 2, 3].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setFemalePhotographers(count)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                      femalePhotographers === count 
+                        ? 'bg-pink-500 text-white font-bold' 
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {count === 0 ? 'None (0)' : `${count} Female`}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* 4. Slider: Drone Camera */}
+            {/* 5. Slider: Drone Camera (Rs. 5,000 / Day - Max 2) */}
             <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs uppercase tracking-widest text-white/70 font-semibold flex items-center gap-2">
+                <span className="text-xs uppercase tracking-widest text-white/80 font-semibold flex items-center gap-2">
                   <Plane className="w-4 h-4 text-cyan-400" />
                   Drone Camera (Aerial 4K Shots)
                 </span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
-                  drones > 0 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-white/40'
-                }`}>
-                  {drones === 0 ? '0 (No Drone)' : `${drones} Drone ${drones === 1 ? 'Operator' : 'Operators'}`}
+                <span className="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  Rs. 5,000 / Day
                 </span>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="2" 
-                value={drones}
-                onChange={(e) => setDrones(parseInt(e.target.value))}
-                className="w-full accent-cyan-400 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-white/40 mt-1">
-                <span>0 (Nahi)</span>
-                <span>1 Drone Unit (Baraat Entry)</span>
-                <span>2 Drone Units (Dual Pilot)</span>
-              </div>
-              <p className="text-[11px] text-white/40 mt-2">
+              <p className="text-[11px] text-white/50 mb-3">
                 Baraat arrival, fireworks aur grand venue entry ke cinematic 4K hawaai shots.
               </p>
-            </div>
-
-            {/* Venue & Delivery */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-white/70 font-semibold mb-2">
-                  Venue Location (City)
-                </label>
-                <select 
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#f2a900]/60 transition-colors"
-                >
-                  <option value="Hasilpur" className="bg-[#121212]">Hasilpur (Local Shoot)</option>
-                  <option value="Chistian" className="bg-[#121212]">Chistian (+ Rs. 10k)</option>
-                  <option value="Others" className="bg-[#121212]">Others (Outstation + Rs. 50k)</option>
-                </select>
+              
+              <div className="flex items-center gap-4">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="2" 
+                  value={drones}
+                  onChange={(e) => setDrones(parseInt(e.target.value, 10))}
+                  className="w-full accent-cyan-400 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="min-w-[70px] text-right font-bold text-sm text-cyan-300">
+                  {drones} {drones === 1 ? 'Drone' : 'Drones'}
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-white/70 font-semibold mb-2">
-                  Delivery Method
-                </label>
-                <select 
-                  value={delivery}
-                  onChange={(e) => setDelivery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#f2a900]/60 transition-colors"
-                >
-                  <option value="Cloud (Google Drive Link)" className="bg-[#121212]">Cloud (Google Drive Link) + Rs. 3,000</option>
-                  <option value="Local Pickup (USB Drive)" className="bg-[#121212]">USB Drive Pickup + Rs. 2,000</option>
-                </select>
+              {/* Quick count buttons */}
+              <div className="flex gap-2 mt-2.5">
+                {[0, 1, 2].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setDrones(count)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                      drones === count 
+                        ? 'bg-cyan-500 text-black font-bold' 
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {count === 0 ? 'No Drone (0)' : `${count} Drone`}
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* Venue Location (City) */}
+            <div className="bg-white/[0.02] border border-white/5 p-4 sm:p-5 rounded-2xl">
+              <label className="block text-xs uppercase tracking-widest text-white/70 font-semibold mb-2">
+                Shoot Venue Location (City)
+              </label>
+              <select 
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-[#f2a900]/60 transition-colors cursor-pointer"
+              >
+                <option value="Hasilpur" className="bg-[#121212]">Hasilpur (Local Shoot - Rs. 0 Extra)</option>
+                <option value="Chistian" className="bg-[#121212]">Chistian (+ Rs. 5,000 Travel)</option>
+                <option value="Others" className="bg-[#121212]">Others (Travel Charges Depend on Distance)</option>
+              </select>
+
+              {venue === 'Others' && (
+                <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs flex items-start gap-2.5">
+                  <span className="text-base leading-none">📍</span>
+                  <div className="leading-relaxed">
+                    <strong className="text-amber-200">Outstation Shoot:</strong> Hasilpur aur Chistian ke ilawa doosre cities ke travel charges exact distance (faslay) ke mutabiq rabta par tay kiye jayenge.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {totalCameras === 0 && (
+              <div className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl flex items-center gap-2">
+                <span>⚠️ Baraye meharbani kam az kam 1 Mirrorless ya DSLR camera zaroor select karein.</span>
+              </div>
+            )}
 
           </div>
 
@@ -408,7 +523,7 @@ export function QuickCalculator() {
                 <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
                   <span className="text-white/60 text-xs uppercase tracking-widest font-bold">Quotation Estimate</span>
                   <span className="bg-[#f2a900]/20 text-[#f2a900] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
-                    Instant Calculation
+                    Transparent Rates
                   </span>
                 </div>
 
@@ -416,9 +531,15 @@ export function QuickCalculator() {
                   <span className="text-xl sm:text-2xl text-[#f2a900] font-sans align-top mr-1">Rs.</span>
                   {estimatedPrice.toLocaleString()}
                 </div>
-                <p className="text-white/40 text-[11px] uppercase tracking-wider mb-6">
-                  *Aapke select kiye gaye setup aur crew ke mutabiq estimated budget.
+                <p className="text-white/40 text-[11px] uppercase tracking-wider mb-4">
+                  *Mirrorless (Rs. 10k), DSLR (Rs. 7k), Female Staff (Rs. 10k), Drone (Rs. 5k) / Din.
                 </p>
+
+                {venue === 'Others' && (
+                  <p className="text-amber-300 text-xs mb-5 bg-amber-500/10 px-3 py-2 rounded-lg border border-amber-500/20">
+                    + Distance ke mutabiq travel charges rabta par bata diye jayenge.
+                  </p>
+                )}
 
                 {/* Selected Spec Overview */}
                 <div className="space-y-2.5 bg-white/5 border border-white/10 p-4 rounded-xl mb-6 text-xs text-white/80">
@@ -433,24 +554,38 @@ export function QuickCalculator() {
                     <span className="font-semibold text-[#f2a900]">{days} {days === 1 ? 'Din (1 Day)' : `${days} Din`}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/50">Camera Setup:</span>
-                    <span className="font-semibold text-white">{cameras}x {cameraType}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/50">Female Photographer:</span>
-                    <span className={`font-semibold ${femalePhotographers > 0 ? 'text-pink-300' : 'text-white/40'}`}>
-                      {femalePhotographers > 0 ? `${femalePhotographers} Female Staff` : 'None'}
+                    <span className="text-white/50">Mirrorless (Rs. 10k):</span>
+                    <span className={`font-semibold ${mirrorlessCameras > 0 ? 'text-[#f2a900]' : 'text-white/40'}`}>
+                      {mirrorlessCameras > 0 ? `${mirrorlessCameras}x Unit(s) (Rs. ${(mirrorlessCameras * RATE_MIRRORLESS * days).toLocaleString()})` : '0 (None)'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/50">Drone Coverage:</span>
+                    <span className="text-white/50">DSLR (Rs. 7k):</span>
+                    <span className={`font-semibold ${dslrCameras > 0 ? 'text-amber-300' : 'text-white/40'}`}>
+                      {dslrCameras > 0 ? `${dslrCameras}x Unit(s) (Rs. ${(dslrCameras * RATE_DSLR * days).toLocaleString()})` : '0 (None)'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/50">Female Crew (Rs. 10k):</span>
+                    <span className={`font-semibold ${femalePhotographers > 0 ? 'text-pink-300' : 'text-white/40'}`}>
+                      {femalePhotographers > 0 ? `${femalePhotographers} Staff (Rs. ${(femalePhotographers * RATE_FEMALE_PHOTOGRAPHER * days).toLocaleString()})` : 'None'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/50">Drone (Rs. 5k):</span>
                     <span className={`font-semibold ${drones > 0 ? 'text-cyan-300' : 'text-white/40'}`}>
-                      {drones > 0 ? `${drones} Drone Unit(s)` : 'None'}
+                      {drones > 0 ? `${drones} Drone (Rs. ${(drones * RATE_DRONE * days).toLocaleString()})` : 'None'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/50">Location:</span>
-                    <span className="font-semibold text-white">{venue}</span>
+                    <span className="font-semibold text-white">
+                      {venue === 'Hasilpur' 
+                        ? 'Hasilpur (Local Shoot)' 
+                        : venue === 'Chistian' 
+                        ? 'Chistian (+ Rs. 5,000)' 
+                        : 'Others (Distance Ke Mutabiq)'}
+                    </span>
                   </div>
                 </div>
 
@@ -499,7 +634,7 @@ export function QuickCalculator() {
                   {submittedQuoteData && (
                     <a
                       href={`https://wa.me/923006103262?text=${encodeURIComponent(
-                        `Assalam-o-Alaikum MuzFrame Studio! Main ne website par quote calculate ki hai:\n\n*Name:* ${submittedQuoteData.clientName}\n*Phone:* ${submittedQuoteData.clientPhone}\n*Events:* ${submittedQuoteData.events?.join(', ') || 'Custom'}\n*Days:* ${submittedQuoteData.days}\n*Cameras:* ${submittedQuoteData.cameras} (${submittedQuoteData.cameraType})\n*Female Staff:* ${submittedQuoteData.femalePhotographers}\n*Drone:* ${submittedQuoteData.drones}\n*Estimated:* Rs. ${Number(submittedQuoteData.estimatedPrice || 0).toLocaleString()}\n\nBaraye meharbani booking confirmation provide karein.`
+                        `Assalam-o-Alaikum MuzFrame Studio! Main ne website calculator se quotation banayi hai:\n\n*Name:* ${submittedQuoteData.clientName}\n*Phone:* ${submittedQuoteData.clientPhone}\n*Events:* ${submittedQuoteData.events?.join(', ') || 'Custom'}\n*Days:* ${submittedQuoteData.days} Din\n*Mirrorless Cameras (Rs. 10k/day):* ${submittedQuoteData.mirrorless || 0}\n*DSLR Cameras (Rs. 7k/day):* ${submittedQuoteData.dslr || 0}\n*Female Crew (Rs. 10k/day):* ${submittedQuoteData.femalePhotographers || 0}\n*Drone (Rs. 5k/day):* ${submittedQuoteData.drones || 0}\n*City:* ${submittedQuoteData.venue}${submittedQuoteData.venue === 'Others' ? ' (Distance ke mutabiq travel charges tay honge)' : submittedQuoteData.venue === 'Chistian' ? ' (+ Rs. 5,000 travel)' : ''}\n*Estimated Price:* Rs. ${Number(submittedQuoteData.estimatedPrice || 0).toLocaleString()}\n\nBaraye meharbani booking details confirm karein.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -538,4 +673,3 @@ export function QuickCalculator() {
     </div>
   );
 }
-
