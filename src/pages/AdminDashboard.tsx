@@ -222,14 +222,15 @@ export function AdminDashboard() {
           const text = await res.text();
           try { return JSON.parse(text); } catch (e) { return []; }
         });
-        const [cRes, eRes, pRes, nRes, plRes, aRes, bdRes] = await Promise.all([
+        const [cRes, eRes, pRes, nRes, plRes, aRes, bdRes, qRes] = await Promise.all([
           fetchJson('/api/clients'),
           fetchJson('/api/events'),
           fetchJson('/api/payments'),
           fetchJson('/api/notifications'),
           fetchJson('/api/playlists'),
           fetchJson('/api/activities'),
-          fetchJson('/api/blocked-dates')
+          fetchJson('/api/blocked-dates'),
+          fetchJson('/api/quotes')
         ]);
         setClients(cRes);
         setEvents(eRes);
@@ -238,6 +239,7 @@ export function AdminDashboard() {
         setPlaylists(plRes);
         setActivities(aRes);
         setBlockedDates(bdRes);
+        setQuotes(qRes || []);
         if (cRes.length > 0) {
           setSelectedPlaylistClient(cRes[0].id);
         }
@@ -265,6 +267,29 @@ export function AdminDashboard() {
       window.removeEventListener('audio-stopped', handleAudioStopped);
     };
   }, []);
+
+  const handleDeleteQuote = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this quote request?")) return;
+    try {
+      await fetch(`/api/quotes/${id}`, { method: 'DELETE' });
+      setQuotes(prev => prev.filter(q => q.id !== id));
+    } catch (err) {
+      console.error("Failed to delete quote", err);
+    }
+  };
+
+  const handleUpdateQuoteStatus = async (id: string, status: string) => {
+    try {
+      await fetch(`/api/quotes/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      setQuotes(prev => prev.map(q => q.id === id ? { ...q, status } : q));
+    } catch (err) {
+      console.error("Failed to update quote status", err);
+    }
+  };
 
   const handleBlockDate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -754,7 +779,12 @@ export function AdminDashboard() {
             onClick={() => setActiveTab('quotes')}
             className={`px-5 py-3 rounded-xl font-semibold uppercase tracking-widest text-xs flex items-center gap-2 transition-all flex-shrink-0 ${activeTab === 'quotes' ? 'bg-[#f2a900] text-black shadow-lg shadow-[#f2a900]/20 font-bold' : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'}`}
           >
-            <MessageSquare className="w-4 h-4" /> Quotes
+            <MessageSquare className="w-4 h-4" /> Quotes 
+            {quotes.length > 0 && (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-1 ${activeTab === 'quotes' ? 'bg-black text-[#f2a900]' : 'bg-[#f2a900] text-black'}`}>
+                {quotes.length}
+              </span>
+            )}
           </button>
 
           <button 
@@ -943,33 +973,125 @@ export function AdminDashboard() {
       {/* TAB: QUOTES */}
       {activeTab === 'quotes' && (
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
-            <h2 className="font-serif text-2xl font-medium text-white mb-6 flex items-center gap-2">
-              <MessageSquare className="w-6 h-6 text-[#f2a900]" /> Custom Quote Requests
-            </h2>
+          <div className="bg-zinc-900/80 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-white/10 pb-4">
+              <div>
+                <h2 className="font-serif text-2xl font-medium text-white flex items-center gap-2">
+                  <MessageSquare className="w-6 h-6 text-[#f2a900]" /> Custom Quote Requests
+                </h2>
+                <p className="text-white/50 text-xs mt-1">Quotes submitted by clients and visitors from the Quick Calculator.</p>
+              </div>
+              <div className="bg-[#f2a900]/10 border border-[#f2a900]/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#f2a900]">
+                Total Requests: {quotes.length}
+              </div>
+            </div>
+
             <div className="space-y-4">
-              {quotes.map((q: any) => (
-                <div key={q.id} className="bg-black/50 border border-white/10 p-6 rounded-2xl flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-                  <div>
-                    <h3 className="text-[#f2a900] font-bold uppercase tracking-wider text-sm mb-1">{q.clientName} ({q.clientPhone})</h3>
-                    <p className="text-white/80 text-sm mb-2">Requested a quote on {new Date(q.timestamp).toLocaleDateString()}</p>
-                    <div className="flex flex-wrap gap-3 mt-3">
-                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Days: <strong className="text-white">{q.days}</strong></span>
-                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Cameras: <strong className="text-white">{q.cameras || 1}</strong></span>
-                      {q.canvas && q.canvas !== "None" && <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Canvas: <strong className="text-white">{q.canvas}</strong></span>}
-                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Venue: <strong className="text-white">{q.venue}</strong></span>
-                      <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">Delivery: <strong className="text-white">{q.delivery || 'Cloud'}</strong></span>
+              {quotes.map((q: any) => {
+                const phoneSanitized = (q.clientPhone || '').replace(/\D/g, '');
+                const waUrl = phoneSanitized ? `https://wa.me/${phoneSanitized}?text=${encodeURIComponent(`Assalam-o-Alaikum ${q.clientName}! Main MuzFrame Studio se rabta kar raha hoon aapki Rs. ${Number(q.estimatedPrice || 0).toLocaleString()} wali quote request ke silsilay mein.`)}` : '';
+
+                return (
+                  <div key={q.id} className="bg-black/60 border border-white/10 hover:border-[#f2a900]/30 p-6 rounded-2xl flex flex-col lg:flex-row gap-6 justify-between items-start lg:items-center transition-colors">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-[#f2a900] font-bold uppercase tracking-wider text-base">
+                          {q.clientName || 'Visitor'}
+                        </h3>
+                        <span className="text-white/60 text-xs font-mono bg-white/5 px-2.5 py-1 rounded-md">
+                          {q.clientPhone || 'No Phone'}
+                        </span>
+                        
+                        {/* Status selector */}
+                        <select
+                          value={q.status || 'pending'}
+                          onChange={(e) => handleUpdateQuoteStatus(q.id, e.target.value)}
+                          className={`text-[11px] font-bold uppercase px-2.5 py-1 rounded-md border focus:outline-none cursor-pointer ${
+                            q.status === 'completed'
+                              ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                              : q.status === 'contacted'
+                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                          }`}
+                        >
+                          <option value="pending" className="bg-[#121212] text-yellow-300">Pending</option>
+                          <option value="contacted" className="bg-[#121212] text-blue-300">Contacted</option>
+                          <option value="completed" className="bg-[#121212] text-green-300">Booked / Completed</option>
+                        </select>
+                      </div>
+
+                      <p className="text-white/50 text-xs">
+                        Requested on {new Date(q.timestamp).toLocaleDateString()} at {new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">
+                          Days: <strong className="text-white">{q.days}</strong>
+                        </span>
+                        {q.events && q.events.length > 0 && (
+                          <span className="bg-[#f2a900]/15 border border-[#f2a900]/30 px-3 py-1 rounded-lg text-xs text-[#f2a900]">
+                            Events: <strong>{q.events.join(', ')}</strong>
+                          </span>
+                        )}
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">
+                          Cameras: <strong className="text-white">{q.cameras || 1} {q.cameraType ? `(${q.cameraType})` : ''}</strong>
+                        </span>
+                        {q.femalePhotographers > 0 && (
+                          <span className="bg-pink-500/15 border border-pink-500/30 px-3 py-1 rounded-lg text-xs text-pink-300">
+                            Female Crew: <strong>{q.femalePhotographers}</strong>
+                          </span>
+                        )}
+                        {q.drones > 0 && (
+                          <span className="bg-cyan-500/15 border border-cyan-500/30 px-3 py-1 rounded-lg text-xs text-cyan-300">
+                            Drone: <strong>{q.drones} {q.drones === 1 ? 'Unit' : 'Units'}</strong>
+                          </span>
+                        )}
+                        {q.canvas && q.canvas !== "None" && (
+                          <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">Canvas: <strong className="text-white">{q.canvas}</strong></span>
+                        )}
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">Venue: <strong className="text-white">{q.venue}</strong></span>
+                        <span className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/70">Delivery: <strong className="text-white">{q.delivery || 'Cloud'}</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between w-full lg:w-auto gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-white/10">
+                      <div className="text-left lg:text-right">
+                        <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold mb-0.5">Estimated Value</p>
+                        <p className="text-2xl sm:text-3xl font-serif text-white font-bold">
+                          <span className="text-sm text-[#f2a900] font-sans mr-1">Rs.</span>
+                          {Number(q.estimatedPrice || 0).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {waUrl && (
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#25D366] hover:bg-[#20ba5a] text-black font-bold text-xs px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-[#25D366]/20"
+                          >
+                            WhatsApp
+                          </a>
+                        )}
+                        <button
+                          onClick={() => handleDeleteQuote(q.id)}
+                          className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
+                          title="Delete Quote Request"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white/50 text-xs uppercase tracking-widest mb-1">Estimated Value</p>
-                    <p className="text-3xl font-serif text-white">Rs. {q.estimatedPrice.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
+
               {quotes.length === 0 && (
-                <div className="text-center py-12 border border-white/10 border-dashed rounded-2xl">
-                  <p className="text-white/50">No custom quotes requested yet.</p>
+                <div className="text-center py-16 border border-white/10 border-dashed rounded-2xl">
+                  <MessageSquare className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/60 font-medium">No custom quotes requested yet.</p>
+                  <p className="text-white/40 text-xs mt-1">Quotes submitted via Quick Calculator on the website will show up here instantly.</p>
                 </div>
               )}
             </div>

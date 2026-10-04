@@ -57,11 +57,11 @@ export function Packages() {
             animate={{ opacity: 1, y: 0 }}
             className="text-[#f2a900] text-xs font-bold tracking-[0.3em] uppercase mb-4"
           >
-            Pricing
+            Wedding Pricing & Rates
           </motion.p>
           <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6">Price <span className="luxury-gradient italic">Packages</span></h1>
           <p className="text-white/60 max-w-2xl mx-auto text-lg leading-relaxed">
-            Choose the perfect package for your event. All packages include standard editing and delivery via client portal.
+            Apne event aur budget ke mutabiq best package select karein. Sabhi packages mein professional editing, cinematic color grading aur online client portal delivery shamil hai.
           </p>
         </div>
 
@@ -77,7 +77,7 @@ export function Packages() {
             >
               {plan.isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#f2a900] text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                  Most Popular
+                  Sab Se Ziyada Pasandida • Most Popular
                 </div>
               )}
               <h2 className={`font-serif text-3xl md:text-4xl text-center mb-8 ${plan.isPopular ? 'text-[#f2a900]' : 'text-white'}`}>
@@ -93,13 +93,13 @@ export function Packages() {
               </div>
               <button 
                 onClick={handleBook}
-                className={`w-full py-4 text-center rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${
+                className={`w-full py-4 text-center rounded-xl font-bold uppercase tracking-widest text-sm transition-all cursor-pointer ${
                   plan.isPopular 
                   ? 'bg-[#f2a900] text-black hover:bg-white' 
                   : 'bg-white/5 text-white hover:bg-[#f2a900] hover:text-black border border-white/10 hover:border-transparent'
                 }`}
               >
-                Book This Package
+                Ye Package Book Karein
               </button>
             </div>
           ))}

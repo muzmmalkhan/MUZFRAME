@@ -35,7 +35,7 @@ export function About() {
             className="space-y-8"
           >
             <div>
-              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Our Story</p>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Hamari Kahani • Our Story</p>
               <h1 className="font-serif text-5xl md:text-6xl font-bold mb-6 text-white leading-tight">
                 More than just <br/><span className="luxury-gradient italic">photographers.</span>
               </h1>
@@ -43,21 +43,21 @@ export function About() {
             
             <div className="space-y-6 text-white/70 text-lg leading-relaxed font-light">
               <p>
-                Based in Hasilpur, <strong>MuzFrame Studio</strong> is an established premium photography and cinematography agency dedicated to preserving the fleeting moments that matter most. We believe every event carries its own unique heartbeat, and our mission is to capture it authentically.
+                Hasilpur mein waqay, <strong>MuzFrame Studio</strong> ek established premium photography aur cinematography team hai jo aapke zindagi ke sab se qeemti lamhaat ko hamesha ke liye mehfooz karti hai. Hum believe karte hain ke har shadi aur har event ki apni ek dilchasp kahani hoti hai.
               </p>
               <p>
-                Our philosophy is simple: technology serves emotion. By combining cutting-edge DSLR and drone equipment with an editorial eye, we bridge the gap between classic portraiture and modern, cinematic storytelling. 
+                Hamara usool seedha hai: technology emotion ko serve kare. Advanced DSLR cameras, 4K mirrorless cinematic rigs aur aerial drone coverage ke saath hum traditional portraits ko modern royal storytelling mein convert karte hain.
               </p>
             </div>
 
             <div className="py-8 border-y border-white/10 my-8 grid grid-cols-2 gap-8">
               <div>
                 <h4 className="font-serif text-4xl text-[#f2a900] mb-2">5+</h4>
-                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Years Exp.</p>
+                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Saal Ka Tajurba (Years)</p>
               </div>
               <div>
                 <h4 className="font-serif text-4xl text-[#f2a900] mb-2">300+</h4>
-                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Events</p>
+                <p className="text-white/50 text-sm uppercase tracking-widest font-bold">Covered Events</p>
               </div>
             </div>
           </motion.div>

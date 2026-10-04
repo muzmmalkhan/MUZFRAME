@@ -3,14 +3,14 @@ import { motion } from 'framer-motion';
 
 export function WhatsAppButton() {
   const whatsappNumber = '923006103262';
-  const defaultMessage = 'Hello MuzFrame Studio! I would like to inquire about your wedding & photography packages.';
+  const defaultMessage = 'Assalam-o-Alaikum MuzFrame Studio! Main apne event / wedding shoot ki booking aur packages ke baare mein baat karna chahta hoon.';
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`;
 
   return (
     <div className="fixed bottom-6 right-6 z-[90] flex items-center group">
       {/* Tooltip on hover */}
       <span className="hidden sm:inline-block mr-3 px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md text-white text-xs font-medium border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
-        Chat on WhatsApp
+        WhatsApp Pe Rabta Karein
       </span>
 
       <motion.a

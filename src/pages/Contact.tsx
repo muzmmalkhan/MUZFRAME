@@ -194,7 +194,7 @@ export function Contact() {
           <div>
             <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6">Let's <span className="luxury-gradient italic">Talk.</span></h1>
             <p className="text-white/60 text-lg leading-relaxed max-w-md">
-              Secure your date. Messages sent through this form will redirect directly to our official WhatsApp for immediate assistance.
+              Apni event date pehle se book karein. Form submit karne ke baad direct hamare official WhatsApp pe connect ho jayenge taake foran confirmation aur rabta ho sake.
             </p>
           </div>
 
@@ -204,7 +204,7 @@ export function Contact() {
                  <Phone className="w-5 h-5" />
                </div>
                <div>
-                  <h4 className="text-white uppercase tracking-widest text-xs font-bold mb-1">Official Number</h4>
+                  <h4 className="text-white uppercase tracking-widest text-xs font-bold mb-1">Official WhatsApp & Call</h4>
                   <p className="text-white/60 font-serif text-xl">+92 300 6103262</p>
                </div>
             </div>
@@ -224,7 +224,7 @@ export function Contact() {
                  <Mail className="w-5 h-5" />
                </div>
                <div>
-                  <h4 className="text-white uppercase tracking-widest text-xs font-bold mb-1">Email Inquiry</h4>
+                  <h4 className="text-white uppercase tracking-widest text-xs font-bold mb-1">Email Rabta</h4>
                   <a href="mailto:muzammal.khan99@gmail.com" className="text-white/60 hover:text-[#f2a900] font-serif text-xl transition-colors">muzammal.khan99@gmail.com</a>
                </div>
             </div>
@@ -269,20 +269,20 @@ export function Contact() {
 
           <form onSubmit={handleWhatsAppRedirect} className="space-y-6">
             <div>
-              <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Your Name</label>
+              <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Aapka Naam (Your Name)</label>
               <input 
                 type="text" 
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 className={`w-full bg-white/5 border ${errors.name ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
-                placeholder="John Doe"
+                placeholder="Apna poora naam likhein..."
               />
               {errors.name && <span className="text-red-500 text-xs mt-1 block">{errors.name}</span>}
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Event Types (Select Multiple)</label>
+              <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Event Types (Aik Ya Ziyada Select Karein)</label>
               {errors.events && <span className="text-red-500 text-xs mb-3 block">{errors.events}</span>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {events.map((ev, index) => (
@@ -426,11 +426,11 @@ export function Contact() {
                 onChange={handleChange}
                 className={`w-full bg-[#111] border ${errors.package ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors appearance-none [color-scheme:dark]`}
               >
-                <option value="None selected">Select a package...</option>
+                <option value="None selected">Package select karein...</option>
                 <option value="Rs. 50,000 Package">Rs. 50,000 Package</option>
-                <option value="Rs. 60,000 Package">Rs. 60,000 Package (Popular)</option>
+                <option value="Rs. 60,000 Package">Rs. 60,000 Package (Sab Se Popular)</option>
                 <option value="Rs. 90,000 Package">Rs. 90,000 Package</option>
-                <option value="Custom Quote">Custom Quote / Other</option>
+                <option value="Custom Quote">Custom Quote / Other Package</option>
               </select>
               {errors.package && <span className="text-red-500 text-xs mt-1 block">{errors.package}</span>}
             </div>
@@ -440,36 +440,36 @@ export function Contact() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
               >
-                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Your Budget (Rs.)</label>
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Aapka Budget (Rs.)</label>
                 <input 
                   type="text" 
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
                   className={`w-full bg-white/5 border ${errors.budget ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors`} 
-                  placeholder="e.g. 150000"
+                  placeholder="Maslan 150000"
                 />
                 {errors.budget && <span className="text-red-500 text-xs mt-1 block">{errors.budget}</span>}
               </motion.div>
             )}
 
             <div>
-              <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Message</label>
+              <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Paigham (Message / Extra Details)</label>
               <textarea 
                 rows={4}
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
                 className={`w-full bg-white/5 border ${errors.message ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors resize-none`} 
-                placeholder="Tell us about your event..."
+                placeholder="Apne event ya shoot ke baare mein mazeed tafseelat likhein..."
               ></textarea>
               {errors.message && <span className="text-red-500 text-xs mt-1 block">{errors.message}</span>}
             </div>
 
-            <button disabled={isSubmitting} type="submit" className="w-full bg-[#f2a900] text-black rounded-xl px-4 py-4 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-white transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
-              {isSubmitting ? 'Processing...' : 'Send via WhatsApp'} {!isSubmitting && <Send className="w-4 h-4" />}
+            <button disabled={isSubmitting} type="submit" className="w-full bg-[#f2a900] text-black rounded-xl px-4 py-4 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-white transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+              {isSubmitting ? 'Process Ho Raha Hai...' : 'WhatsApp Pe Bhejein'} {!isSubmitting && <Send className="w-4 h-4" />}
             </button>
-            <p className="text-center text-white/30 text-xs mt-4">You will be redirected to WhatsApp to send this message.</p>
+            <p className="text-center text-white/30 text-xs mt-4">Yeh click karte hi direct WhatsApp par details send ho jayengi.</p>
           </form>
         </motion.div>
       </div>

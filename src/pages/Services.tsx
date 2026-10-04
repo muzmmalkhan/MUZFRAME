@@ -2,11 +2,11 @@ import { Camera, Video, Plane, Edit3, Image as ImageIcon, Check, Radio, MonitorP
 import { motion } from 'framer-motion';
 
 const INDIVIDUAL_SERVICES = [
-  { title: "Wedding Shoot", icon: ImageIcon, desc: "Candid and cinematic moments captured beautifully." },
-  { title: "Model Shoot", icon: Users, desc: "High-end editorial fashion and model photography." },
-  { title: "Re Branding", icon: Briefcase, desc: "Transform and elevate your corporate identity." },
-  { title: "Audio Video Editing", icon: MonitorPlay, desc: "Professional audio mixing, post-production and color grading." },
-  { title: "Live Coverages", icon: Radio, desc: "High-quality multi-camera live streaming and event coverage." },
+  { title: "Wedding Shoot", icon: ImageIcon, desc: "Candid aur cinematic lamhaat, dulhan aur dulha ke memorable portraits." },
+  { title: "Model Shoot", icon: Users, desc: "High-end editorial fashion, bridal wear aur model portfolio photography." },
+  { title: "Re Branding", icon: Briefcase, desc: "Commercial identity, store launches aur corporate video campaigns." },
+  { title: "Audio Video Editing", icon: MonitorPlay, desc: "Professional cinematic color grading, sound mixing aur teasers." },
+  { title: "Live Coverages", icon: Radio, desc: "Multi-camera HD live streaming aur grand event coverage." },
 ];
 
 export function Services() {
@@ -17,8 +17,9 @@ export function Services() {
         {/* Individual Services */}
         <div className="mb-32">
           <div className="text-center mb-16">
+            <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Hamari Khadmaat</p>
             <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4">Core <span className="luxury-gradient italic">Services</span></h2>
-            <p className="text-white/60 max-w-2xl mx-auto text-lg">We provide specialized creative services tailored to your needs.</p>
+            <p className="text-white/60 max-w-2xl mx-auto text-lg">Shadi ke shoot se lekar commercial projects tak — specialized creative services aapke event ke liye.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 place-items-center sm:place-items-stretch">
             {INDIVIDUAL_SERVICES.map((srv, idx) => (

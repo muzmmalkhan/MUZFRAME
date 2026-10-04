@@ -18,18 +18,6 @@ interface BrandStory {
 
 const BRANDS: BrandStory[] = [
   {
-    id: 'bajwas',
-    name: 'Bajwas Collection',
-    category: 'Bridal & Fashion Wear',
-    tagline: 'Signature Bridal Films & Couture Campaigns',
-    highlight: 'Official visual storyteller capturing bridal wear and fashion shoots with cinematic 4K video.',
-    scope: 'Bridal Films • Fashion Shoots',
-    bgImage: 'https://images.unsplash.com/photo-1594552072238-b8a33785b261?q=80&w=1200&auto=format&fit=crop',
-    stat: '100%',
-    statLabel: 'Client Satisfaction',
-    accent: '#f2a900'
-  },
-  {
     id: 'modern',
     name: 'Modern Cash & Carry',
     category: 'Commercial & Retail Store',
@@ -40,23 +28,11 @@ const BRANDS: BrandStory[] = [
     stat: '500K+',
     statLabel: 'Views Generated',
     accent: '#38bdf8'
-  },
-  {
-    id: 'shamsheer',
-    name: 'Shamsheer',
-    category: 'Clothing & Lifestyle Brand',
-    tagline: 'Brand Stories & Lookbooks',
-    highlight: 'High quality cinematic shoots and editorial photos that bring the brand to life.',
-    scope: 'Lookbook Videos • Editorial Photos',
-    bgImage: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop',
-    stat: '5.0 ★',
-    statLabel: 'Client Rating',
-    accent: '#e0a96d'
   }
 ];
 
 export function TrustedBrandsSection() {
-  const [activeBrand, setActiveBrand] = useState<string>('bajwas');
+  const [activeBrand, setActiveBrand] = useState<string>('modern');
   const navigate = useNavigate();
 
   const currentBrand = BRANDS.find((b) => b.id === activeBrand) || BRANDS[0];
@@ -66,7 +42,7 @@ export function TrustedBrandsSection() {
   };
 
   const openWhatsApp = () => {
-    const text = encodeURIComponent("Hello MuzFrame Studio! I saw that you are trusted by Bajwas Collection, Modern Cash & Carry, and Shamsheer. I want to inquire about booking your team for my upcoming event.");
+    const text = encodeURIComponent("Hello MuzFrame Studio! I saw that you are trusted by Modern Cash & Carry. I want to inquire about booking your team for my upcoming event.");
     window.open(`https://wa.me/923006103262?text=${text}`, '_blank');
   };
 
@@ -87,7 +63,7 @@ export function TrustedBrandsSection() {
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#f2a900]/10 border border-[#f2a900]/30 text-[#f2a900] text-xs uppercase tracking-wider font-semibold mb-3"
           >
             <Crown className="w-3.5 h-3.5" />
-            <span>Trusted by Brands</span>
+            <span>Hasilpur Ke Top Brands Ka Etemad</span>
           </motion.div>
 
           <motion.h2 
@@ -107,12 +83,12 @@ export function TrustedBrandsSection() {
             transition={{ delay: 0.2 }}
             className="text-white/70 text-sm sm:text-base font-light leading-relaxed"
           >
-            Well-known clothing brands and commercial stores trust us for their shoots and video campaigns. We bring that same camera quality and dedication to every wedding we capture.
+            Hasilpur ke mashhoor commercial stores aur brands apne launch campaigns aur video shoots ke liye MuzFrame par bharosa karte hain. Wahi cinematic camera quality hum aapki shadi ke har event mein laate hain.
           </motion.p>
         </div>
 
-        {/* Brand Selector Tabs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        {/* Brand Selector Card */}
+        <div className="max-w-md mx-auto mb-10">
           {BRANDS.map((brand) => {
             const isSelected = activeBrand === brand.id;
             return (
@@ -120,7 +96,7 @@ export function TrustedBrandsSection() {
                 key={brand.id}
                 id={`brand-tab-${brand.id}`}
                 onClick={() => setActiveBrand(brand.id)}
-                className={`relative text-left p-6 rounded-2xl transition-all duration-300 border ${
+                className={`relative w-full text-left p-6 sm:p-7 rounded-2xl transition-all duration-300 border ${
                   isSelected
                     ? 'bg-gradient-to-b from-white/10 to-white/[0.03] border-[#f2a900] shadow-[0_0_30px_rgba(242,169,0,0.2)]'
                     : 'bg-black/40 border-white/10 hover:border-white/20 hover:bg-white/[0.02]'
@@ -134,7 +110,7 @@ export function TrustedBrandsSection() {
                 )}
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-[#f2a900] bg-[#f2a900]/10 px-2.5 py-1 rounded-md border border-[#f2a900]/20">
-                    Trusted Partner
+                    Trusted Partner • Official Shoot
                   </span>
                   <ShieldCheck className={`w-4 h-4 ${isSelected ? 'text-[#f2a900]' : 'text-white/30'}`} />
                 </div>
@@ -142,7 +118,7 @@ export function TrustedBrandsSection() {
                   {brand.name}
                 </h3>
                 <p className="text-xs text-white/60 line-clamp-1 font-light">
-                  {brand.category}
+                  {brand.category} — {brand.tagline}
                 </p>
               </button>
             );

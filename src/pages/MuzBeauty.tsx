@@ -27,21 +27,21 @@ export function MuzBeauty() {
         >
           <div className="inline-flex items-center gap-2 border border-[#f2a900]/30 bg-[#f2a900]/5 px-4 py-2 rounded-full w-fit">
             <Sparkles className="w-4 h-4 text-[#f2a900]" />
-            <span className="text-[#f2a900] text-sm font-semibold tracking-widest uppercase">Coming Soon</span>
+            <span className="text-[#f2a900] text-sm font-semibold tracking-widest uppercase">Jald Aa Raha Hai • Coming Soon</span>
           </div>
           
           <h1 className="font-serif text-5xl lg:text-7xl font-medium text-white leading-tight">
             Flawless <br />
-            <span className="text-[#f2a900] italic">Elegance</span> Awaits.
+            <span className="text-[#f2a900] italic">Bridal Glow</span> Awaits.
           </h1>
           
           <p className="text-white/60 text-lg leading-relaxed max-w-xl">
-            MuzBeauty Bridal Glow Cream is currently in the final stages of perfection. Designed to deliver a camera-ready glow, it hydrates, nourishes, and brightens for all skin types. Prepare to radiate confidence in every frame.
+            MuzBeauty Bridal Glow Cream camera-ready noor aur fresh look ke liye tayyar ki ja rahi hai. Har skin type ko hydrate aur brighten kare taake photography aur videography ke har frame mein aapka confidence chamke.
           </p>
           
           <div className="pt-4 flex items-center gap-6">
-            <button onClick={handleJoin} className="btn-primary flex items-center gap-2 group">
-              Join Waitlist
+            <button onClick={handleJoin} className="btn-primary flex items-center gap-2 group cursor-pointer">
+              Waitlist Join Karein
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>

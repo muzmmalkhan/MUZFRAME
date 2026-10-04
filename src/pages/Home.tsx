@@ -62,16 +62,36 @@ export function Home() {
         
         {/* Hero Content */}
         <div className="relative z-20 max-w-7xl mx-auto px-6 lg:px-12 w-full text-center mt-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-[#f2a900]/30 text-[#f2a900] text-xs uppercase tracking-widest font-semibold mb-6"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>Hasilpur & Chistian Ka Trusted Studio</span>
+          </motion.div>
+
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white leading-tight mb-6 sm:mb-8 uppercase max-w-4xl mx-auto px-4 sm:px-0"
+            className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-white leading-tight mb-4 uppercase max-w-4xl mx-auto px-4 sm:px-0"
           >
             Framing Your <br className="hidden sm:block" />
             <span className="italic luxury-gradient">Wedding Moments</span><br />
             Perfectly
           </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-white/80 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-8 font-light leading-relaxed"
+          >
+            Aapke sab se khaas lamhaat ko cinematic andaaz mein mehfooz karein — 4K video, breathtaking drone shots aur royal bridal photography ke saath.
+          </motion.p>
+
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -80,15 +100,15 @@ export function Home() {
           >
             <button 
               onClick={handleBookNow}
-              className="w-full sm:w-auto justify-center bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)]"
+              className="w-full sm:w-auto justify-center bg-[#f2a900] text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm flex items-center gap-2 hover:bg-white transition-colors shadow-[0_0_20px_rgba(242,169,0,0.4)] cursor-pointer"
             >
-              Book Now <ArrowRight className="w-4 h-4" />
+              Book Karein <ArrowRight className="w-4 h-4" />
             </button>
             <button 
               onClick={handleQuickQuote}
               className="w-full sm:w-auto justify-center nav-pill px-8 py-4 bg-black/50 backdrop-blur-md flex items-center gap-2 hover:border-[#f2a900] hover:text-[#f2a900] transition-colors cursor-pointer text-xs sm:text-sm uppercase tracking-widest font-bold"
             >
-              <Calculator className="w-4 h-4 text-[#f2a900]" /> Quick Quote
+              <Calculator className="w-4 h-4 text-[#f2a900]" /> Instant Quote Banayein
             </button>
           </motion.div>
         </div>
@@ -121,11 +141,12 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12">
             <div>
-              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Showreel</p>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-4">Hamara Latest Kaam • Showreel</p>
               <h2 className="font-serif text-4xl md:text-5xl">Cinematic <span className="luxury-gradient italic">Vision</span></h2>
+              <p className="text-white/60 text-sm mt-2">Real wedding stories aur royal celebration highlights dekhein.</p>
             </div>
             <Link to="/gallery" className="nav-pill hidden md:flex items-center gap-2 mt-4 md:mt-0 glass-panel">
-              View All Videos <ArrowRight className="w-4 h-4" />
+              Tamam Videos Dekhein <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           
@@ -136,7 +157,7 @@ export function Home() {
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
             <div className="absolute inset-0 flex items-center justify-center">
-               <button onClick={() => navigate('/gallery')} className="w-24 h-24 rounded-full border border-white/30 backdrop-blur-md flex items-center justify-center group-hover:border-[#f2a900] group-hover:text-[#f2a900] transition-all hover:scale-110 group-hover:shadow-[0_0_30px_rgba(242,169,0,0.3)]">
+               <button onClick={() => navigate('/gallery')} className="w-24 h-24 rounded-full border border-white/30 backdrop-blur-md flex items-center justify-center group-hover:border-[#f2a900] group-hover:text-[#f2a900] transition-all hover:scale-110 group-hover:shadow-[0_0_30px_rgba(242,169,0,0.3)] cursor-pointer">
                  <Play className="w-8 h-8 ml-2" />
                </button>
             </div>
@@ -149,14 +170,15 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
            <div className="text-center mb-16">
               <Star className="w-8 h-8 text-[#f2a900] mx-auto mb-4" />
-              <h2 className="font-serif text-4xl md:text-5xl mb-4">Client Love</h2>
-              <p className="text-white/60 max-w-2xl mx-auto">Hear from those who trusted us with their most precious memories.</p>
+              <p className="text-[#f2a900] uppercase tracking-widest text-xs font-bold mb-2">Hamare Khushgawar Clients</p>
+              <h2 className="font-serif text-4xl md:text-5xl mb-4">Client Love & Reviews</h2>
+              <p className="text-white/60 max-w-2xl mx-auto">Dekhein un couples aur brand owners ka feedback jinhon ne apne sab se qeemti lamhaat hamare naam kiye.</p>
            </div>
            
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {[
-                { name: 'Ayesha & Ali', role: 'Wedding Couple', text: "MuzFrame Studio exceeded our expectations. The drone shots were breathtaking, and the cinematic video still makes us cry every time we watch it. Ultra professional team." },
-                { name: 'Hassan Raza', role: 'Brand Owner', text: "We hired them for a product shoot and fashion portfolio. The lighting, the editing, the premium quality—they truly understand exactly what a high-end brand needs." }
+                { name: 'Ayesha & Ali', role: 'Wedding Couple', text: "MuzFrame Studio ne hamari shadi ko waqai yaadgaar bana diya. Drone shots aur cinematic wedding video dekh kar har baar dil khush ho jata hai. Bahut cooperative aur professional team hai." },
+                { name: 'Hassan Raza', role: 'Brand Owner', text: "Humne promotional campaigns aur commercial shoots ke liye MuzFrame ko hire kiya. Lighting, editing aur camera angles itne zabardast the ke product ka premium look nikal aya." }
               ].map((t, i) => (
                 <div key={i} className="glass-panel p-10 rounded-3xl relative">
                   <div className="absolute -top-4 -left-4 text-6xl text-[#f2a900] opacity-20 font-serif">"</div>

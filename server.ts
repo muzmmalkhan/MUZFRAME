@@ -468,20 +468,49 @@ async function startServer() {
   // Quotes API
   app.get("/api/quotes", (req, res) => res.json(db.quotes || []));
   app.post("/api/quotes", async (req, res) => {
-    const quote = { id: Date.now().toString(), timestamp: new Date().toISOString(), ...req.body };
+    const quote = { 
+      id: Date.now().toString(), 
+      timestamp: new Date().toISOString(), 
+      status: 'pending',
+      ...req.body 
+    };
     db.quotes = db.quotes || [];
-    db.quotes.push(quote);
+    db.quotes.unshift(quote);
     
     // Also add an activity for this
-    db.activities.push({
+    db.activities = db.activities || [];
+    db.activities.unshift({
       id: Date.now().toString() + "-act",
       timestamp: new Date().toISOString(),
-      clientName: quote.clientName,
-      description: "Requested a custom quote (Estimated: Rs. " + quote.estimatedPrice.toLocaleString() + ")"
+      clientName: quote.clientName || 'Visitor',
+      description: "Requested a quote: " + (quote.events?.join(', ') || quote.days + " Days") + " (Rs. " + Number(quote.estimatedPrice || 0).toLocaleString() + ")"
+    });
+
+    // Add notification for admin
+    db.notifications = db.notifications || [];
+    db.notifications.unshift({
+      id: `NOTIF-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      title: "New Custom Quote Request",
+      message: `${quote.clientName || 'Visitor'} (${quote.clientPhone || 'No Phone'}) requested quote of Rs. ${Number(quote.estimatedPrice || 0).toLocaleString()}`,
+      read: false,
+      type: 'quote'
     });
     
     saveDb();
     res.json(quote);
+  });
+
+  app.delete("/api/quotes/:id", (req, res) => {
+    db.quotes = (db.quotes || []).filter((q: any) => q.id !== req.params.id);
+    saveDb();
+    res.json({ success: true });
+  });
+
+  app.patch("/api/quotes/:id", (req, res) => {
+    db.quotes = (db.quotes || []).map((q: any) => q.id === req.params.id ? { ...q, ...req.body } : q);
+    saveDb();
+    res.json({ success: true });
   });
 
   app.get("/api/activities", (req, res) => res.json(db.activities));
