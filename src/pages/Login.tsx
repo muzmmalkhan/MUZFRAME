@@ -1,4 +1,4 @@
-import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin, Phone, AlertTriangle, Copy, ExternalLink, X, ShieldAlert } from 'lucide-react';
+import { Lock, Mail, Key, User, ArrowLeft, CheckCircle2, Sparkles, MapPin, Phone, AlertTriangle, Copy, ExternalLink, X, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ export function Login() {
   const [viewMode, setViewMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [clientLocation, setClientLocation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -85,8 +86,8 @@ export function Login() {
         return;
       }
     } else {
-      if (!phone || !password) {
-        setError('Please enter both phone number and password');
+      if (!phone.trim() || !password) {
+        setError('Please enter your email or phone number and password');
         return;
       }
     }
@@ -259,14 +260,22 @@ export function Login() {
             )}
             
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              {viewMode === 'signin' ? (
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              ) : (
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+              )}
               <input 
-                type="text" 
-                placeholder="Phone Number (e.g. 03001234567)" 
+                type={viewMode === 'signin' ? "text" : "tel"} 
+                placeholder={viewMode === 'signin' ? "Email Address or Phone Number" : "Phone Number (e.g. 03001234567)"} 
                 value={phone}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9]/g, '');
-                  setPhone(val);
+                  if (viewMode === 'signup') {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setPhone(val);
+                  } else {
+                    setPhone(e.target.value);
+                  }
                 }}
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]/60 transition-colors text-sm"
@@ -277,13 +286,21 @@ export function Login() {
               <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   placeholder="Password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required={viewMode !== 'forgot'}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]/60 transition-colors text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f2a900]/60 transition-colors text-sm"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             )}
 

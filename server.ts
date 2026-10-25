@@ -73,7 +73,8 @@ try {
           id: user.id,
           name: user.name,
           email: user.email,
-          phone: 'Not provided',
+          phone: user.phone || 'Not provided',
+          password: user.password || 'client123',
           location: 'Unknown',
           eventName: 'Pending Booking',
           eventType: 'Unknown',
@@ -83,6 +84,27 @@ try {
           totalAmount: 0,
           paidAmount: 0
         });
+      }
+    });
+
+    // Auto-sync missing users from existing clients so any client created in Admin can log in immediately
+    db.clients.forEach((client: any) => {
+      const existingUser = db.users.find((u: any) => 
+        (client.email && u.email && u.email.toLowerCase() === client.email.toLowerCase()) ||
+        (client.phone && u.phone && u.phone === client.phone) ||
+        (client.id && u.id === client.id)
+      );
+      if (!existingUser) {
+        db.users.push({
+          id: client.id,
+          name: client.name,
+          email: client.email || `${(client.phone || client.id).replace(/\s/g, '')}@client.muzframe`,
+          phone: client.phone || '',
+          password: client.password || 'client123',
+          role: 'client'
+        });
+      } else if (client.password && !existingUser.password) {
+        existingUser.password = client.password;
       }
     });
   }
@@ -141,6 +163,27 @@ const loadFromSupabase = async () => {
         }
       }
     }
+
+    // Ensure all clients have user credentials
+    db.clients.forEach((client: any) => {
+      const existingUser = db.users.find((u: any) => 
+        (client.email && u.email && u.email.toLowerCase() === client.email.toLowerCase()) ||
+        (client.phone && u.phone && u.phone === client.phone) ||
+        (client.id && u.id === client.id)
+      );
+      if (!existingUser) {
+        db.users.push({
+          id: client.id,
+          name: client.name,
+          email: client.email || `${(client.phone || client.id).replace(/\s/g, '')}@client.muzframe`,
+          phone: client.phone || '',
+          password: client.password || 'client123',
+          role: 'client'
+        });
+      } else if (client.password && !existingUser.password) {
+        existingUser.password = client.password;
+      }
+    });
 
     console.log('Database sync with Supabase completed successfully.');
     saveDb();
@@ -232,16 +275,35 @@ async function startServer() {
     const { phone, password } = req.body;
     
     if (!phone || !password) {
-      return res.status(400).json({ error: "Phone number and password are required" });
+      return res.status(400).json({ error: "Email or phone number and password are required" });
     }
 
-    if (phone === 'muzammal.frames' || phone === 'muzammal.khan99@gmail.com' || phone === 'muzmmal.khan99@gmail.com') {
+    const cleanInput = phone.trim().toLowerCase();
+    const cleanPhoneDigits = phone.replace(/[^0-9]/g, '');
+
+    if (cleanInput === 'muzammal.frames' || cleanInput === 'muzammal.khan99@gmail.com' || cleanInput === 'muzmmal.khan99@gmail.com') {
       return res.status(401).json({ error: "Admin login is only allowed via 'Continue with Google' button. Please use your Google Account." });
     }
 
-    const user = db.users.find(u => (u.phone === phone || u.email === phone) && u.password === password);
+    const user = db.users.find(u => {
+      if (!u || u.password !== password) return false;
+      const uEmail = (u.email || '').toLowerCase().trim();
+      const uPhone = (u.phone || '').trim();
+      const uPhoneDigits = uPhone.replace(/[^0-9]/g, '');
+      const uId = (u.id || '').toLowerCase();
+      const uEmailPrefix = uEmail.split('@')[0];
+
+      return (
+        uEmail === cleanInput ||
+        uPhone.toLowerCase() === cleanInput ||
+        (cleanPhoneDigits.length >= 7 && uPhoneDigits.length >= 7 && (uPhoneDigits.endsWith(cleanPhoneDigits) || cleanPhoneDigits.endsWith(uPhoneDigits))) ||
+        uId === cleanInput ||
+        uEmailPrefix === cleanInput
+      );
+    });
+
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Invalid email, phone number, or password" });
     }
     res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } });
   });
@@ -340,17 +402,76 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  app.get("/api/clients", (req, res) => res.json(db.clients));
-  app.post("/api/clients", async (req, res) => {
-    const existing = db.clients.find(c => c.email.toLowerCase() === req.body.email.toLowerCase());
-    if (existing) {
-        return res.status(400).json({ error: "A client with this email already exists." });
-    }
-    db.clients.push(req.body);
-    saveDb();
-    pushToSupabase('clients', req.body);
-    res.json(req.body);
+  app.get("/api/clients", (req, res) => {
+    // Enrich with login password for admin visibility
+    const enriched = db.clients.map(c => {
+      const u = db.users.find(usr => usr.id === c.id || (c.email && usr.email?.toLowerCase() === c.email.toLowerCase()));
+      return {
+        ...c,
+        password: c.password || u?.password || 'client123'
+      };
+    });
+    res.json(enriched);
   });
+
+  app.post("/api/clients", async (req, res) => {
+    const { name, email, phone, password } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Client email is required." });
+    }
+    const existing = db.clients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      return res.status(400).json({ error: "A client with this email already exists." });
+    }
+
+    const clientPassword = password && password.trim().length >= 3 ? password.trim() : 'client123';
+    const clientRecord = {
+      ...req.body,
+      password: clientPassword
+    };
+
+    db.clients.push(clientRecord);
+    pushToSupabase('clients', clientRecord);
+
+    // Create / Sync client login user in db.users
+    const userRecord = {
+      id: clientRecord.id || `CLI-${Math.floor(100 + Math.random() * 900)}`,
+      name: name || clientRecord.name,
+      email: email.toLowerCase().trim(),
+      phone: phone || clientRecord.phone || '',
+      password: clientPassword,
+      role: 'client'
+    };
+
+    const existingUserIndex = db.users.findIndex(u => 
+      (u.email && u.email.toLowerCase() === userRecord.email) ||
+      (userRecord.phone && u.phone && u.phone === userRecord.phone) ||
+      u.id === userRecord.id
+    );
+
+    if (existingUserIndex >= 0) {
+      db.users[existingUserIndex] = { ...db.users[existingUserIndex], ...userRecord };
+      pushToSupabase('users', db.users[existingUserIndex]);
+    } else {
+      db.users.push(userRecord);
+      pushToSupabase('users', userRecord);
+    }
+
+    const activity = {
+      id: `ACT-${Date.now()}`,
+      clientName: userRecord.name,
+      type: 'Account Created',
+      description: `Client account created by Admin with portal password.`,
+      timestamp: new Date().toISOString()
+    };
+    db.activities.unshift(activity);
+    pushToSupabase('activities', activity);
+    if (db.activities.length > 100) db.activities.pop();
+
+    saveDb();
+    res.json(clientRecord);
+  });
+
   app.delete("/api/clients/:id", async (req, res) => {
     const client = db.clients.find(c => c.id === req.params.id);
     if (!client) return res.status(404).json({ error: "Not found" });
@@ -359,11 +480,14 @@ async function startServer() {
     db.events = db.events.filter(e => e.clientName !== client.name);
     db.payments = db.payments.filter(p => p.clientName !== client.name);
     db.playlists = db.playlists.filter(p => p.clientId !== client.id);
+    db.users = db.users.filter(u => u.id !== client.id && u.email?.toLowerCase() !== client.email?.toLowerCase());
     
     saveDb();
     deleteFromSupabase('clients', req.params.id);
+    deleteFromSupabase('users', req.params.id);
     res.json({ success: true });
   });
+
   app.put("/api/clients/:id", async (req, res) => {
     const oldClient = db.clients.find(c => c.id === req.params.id);
     if (!oldClient) return res.status(404).json({ error: "Not found" });
@@ -376,6 +500,29 @@ async function startServer() {
     if (nameChanged) {
       db.events = db.events.map(e => e.clientName === oldClient.name ? { ...e, clientName: newName } : e);
       db.payments = db.payments.map(p => p.clientName === oldClient.name ? { ...p, clientName: newName } : p);
+    }
+
+    // Sync credentials in db.users
+    const userIndex = db.users.findIndex(u => u.id === req.params.id || (oldClient.email && u.email?.toLowerCase() === oldClient.email.toLowerCase()));
+    if (userIndex >= 0) {
+      if (req.body.name) db.users[userIndex].name = req.body.name;
+      if (req.body.email) db.users[userIndex].email = req.body.email.toLowerCase().trim();
+      if (req.body.phone) db.users[userIndex].phone = req.body.phone;
+      if (req.body.password && req.body.password.trim().length >= 3) {
+        db.users[userIndex].password = req.body.password.trim();
+      }
+      pushToSupabase('users', db.users[userIndex]);
+    } else {
+      const newUser = {
+        id: req.params.id,
+        name: req.body.name || oldClient.name,
+        email: (req.body.email || oldClient.email).toLowerCase().trim(),
+        phone: req.body.phone || oldClient.phone || '',
+        password: req.body.password || 'client123',
+        role: 'client'
+      };
+      db.users.push(newUser);
+      pushToSupabase('users', newUser);
     }
     
     saveDb();

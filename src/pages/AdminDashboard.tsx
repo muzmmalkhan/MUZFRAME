@@ -35,7 +35,10 @@ import {
   Check,
   Disc,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Key,
+  EyeOff,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -47,6 +50,7 @@ interface ClientRecord {
   name: string;
   email: string;
   phone: string;
+  password?: string;
   location?: string;
   eventName: string;
   eventType?: 'Wedding' | 'Barat' | 'Walima' | 'Corporate' | 'Mehndi';
@@ -188,11 +192,13 @@ export function AdminDashboard() {
   const [editingClient, setEditingClient] = useState<any>(null);
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [showClientPassword, setShowClientPassword] = useState(false);
   const [showAddClient, setShowAddClient] = useState(false);
   const [newClient, setNewClient] = useState({ 
     name: '', 
     email: '', 
     phone: '', 
+    password: '',
     eventName: '', 
     eventType: 'Wedding' as const,
     eventDate: new Date().toISOString().split('T')[0],
@@ -374,11 +380,14 @@ export function AdminDashboard() {
     const tot = parseInt(newClient.totalAmount) || 90000;
     const paid = parseInt(newClient.paidAmount) || 0;
 
+    const clientPassword = newClient.password && newClient.password.trim() ? newClient.password.trim() : 'client123';
+
     const created: ClientRecord = {
       id: `CLI-${Math.floor(100 + Math.random() * 900)}`,
       name: newClient.name,
-      email: newClient.email,
+      email: newClient.email.trim(),
       phone: newClient.phone || '0300-6103262',
+      password: clientPassword,
       eventName: newClient.eventName || `${newClient.name}'s ${newClient.eventType}`,
       eventType: newClient.eventType,
       eventDate: newClient.eventDate,
@@ -441,8 +450,8 @@ export function AdminDashboard() {
     }
 
     setShowAddClient(false);
-    setNewClient({ name: '', email: '', phone: '', eventName: '', eventType: 'Wedding', eventDate: new Date().toISOString().split('T')[0], package: 'Luxury 3-Day Cinematic Package', totalAmount: '90000', paidAmount: '0' });
-    triggerToast(`Client ${created.name} registered successfully!`);
+    setNewClient({ name: '', email: '', phone: '', password: '', eventName: '', eventType: 'Wedding', eventDate: new Date().toISOString().split('T')[0], package: 'Luxury 3-Day Cinematic Package', totalAmount: '90000', paidAmount: '0' });
+    triggerToast(`Client ${created.name} registered successfully with password: ${clientPassword}`);
   };
 
   const handleDeleteClient = async (id: string) => {
@@ -1197,6 +1206,10 @@ export function AdminDashboard() {
                           <div className="text-white/50 text-xs mt-0.5 flex items-center gap-1">
                             {client.email} • {client.phone}
                           </div>
+                          <div className="text-white/60 text-[11px] mt-1 flex items-center gap-1.5 font-mono">
+                            <span className="text-[#f2a900] flex items-center gap-1"><Key className="w-3 h-3" /> Password:</span>
+                            <span className="bg-white/10 text-white font-medium px-2 py-0.5 rounded text-[11px] tracking-wider">{client.password || 'client123'}</span>
+                          </div>
                           <div className="text-[#f2a900]/70 text-[10px] mt-1 flex items-center gap-1 font-medium">
                             <MapPin className="w-3 h-3" /> {client.location || 'Location Not Provided'}
                           </div>
@@ -1238,6 +1251,28 @@ export function AdminDashboard() {
 
                         <td className="py-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                const pass = client.password || 'client123';
+                                const creds = `MuzFrame Studio Client Portal Login\n\nLogin Link: ${window.location.origin}/login\nEmail / User: ${client.email}\nPhone: ${client.phone}\nPassword: ${pass}\n\nYou can log in and view your 4K Highlights, select wedding songs, and track shoot status!`;
+                                navigator.clipboard.writeText(creds);
+                                triggerToast(`Login credentials copied for ${client.name}!`);
+                              }}
+                              className="p-2 rounded-xl bg-white/5 hover:bg-[#f2a900] hover:text-black transition-colors text-white/80"
+                              title="Copy Login Credentials for WhatsApp / SMS"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingClient(client);
+                                setShowEditClient(true);
+                              }}
+                              className="p-2 rounded-xl bg-white/5 hover:bg-[#f2a900] hover:text-black transition-colors text-white/80"
+                              title="Edit Client Account & Password"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => handleDownloadInvoice(client)}
                               className="p-2 rounded-xl bg-white/5 hover:bg-[#f2a900] hover:text-black transition-colors text-white/80"
@@ -1842,6 +1877,39 @@ export function AdminDashboard() {
                     <input type="text" value={editingClient.phone} onChange={(e) => setEditingClient({ ...editingClient, phone: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
                   </div>
                 </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider">Client Portal Password</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const randomPass = 'client' + Math.floor(100 + Math.random() * 900);
+                        setEditingClient({ ...editingClient, password: randomPass });
+                      }}
+                      className="text-[11px] text-[#f2a900] hover:underline flex items-center gap-1 font-mono"
+                    >
+                      <Key className="w-3 h-3" /> Auto-Generate
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                    <input 
+                      type={showClientPassword ? "text" : "password"} 
+                      placeholder="Client Portal Password" 
+                      value={editingClient.password || ''} 
+                      onChange={(e) => setEditingClient({ ...editingClient, password: e.target.value })} 
+                      className="w-full bg-black/60 border border-white/10 rounded-xl pl-11 pr-11 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowClientPassword(!showClientPassword)} 
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                      title={showClientPassword ? "Hide password" : "Show password"}
+                    >
+                      {showClientPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Total Amount (Rs)</label>
@@ -1889,6 +1957,48 @@ export function AdminDashboard() {
                     <input type="text" placeholder="0300-1234567" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
                   </div>
                 </div>
+
+                {/* PASSWORD FIELD WITH AUTO-GENERATE & VISIBILITY TOGGLE */}
+                <div className="bg-black/30 p-3.5 rounded-2xl border border-white/5 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-white/80 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-[#f2a900]" /> Client Portal Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const randomPass = 'client' + Math.floor(100 + Math.random() * 900);
+                        setNewClient({ ...newClient, password: randomPass });
+                      }}
+                      className="text-[11px] text-[#f2a900] hover:underline flex items-center gap-1 font-mono"
+                    >
+                      <Sparkles className="w-3 h-3" /> Auto-Generate
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type={showClientPassword ? "text" : "password"} 
+                      placeholder="Set login password (e.g. client123)" 
+                      required 
+                      value={newClient.password} 
+                      onChange={(e) => setNewClient({ ...newClient, password: e.target.value })} 
+                      className="w-full bg-black/70 border border-white/10 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:border-[#f2a900]" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowClientPassword(!showClientPassword)} 
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                      title={showClientPassword ? "Hide password" : "Show password"}
+                    >
+                      {showClientPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-[#f2a900]/90 flex items-center gap-1 pt-0.5">
+                    <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+                    Client is Email ya Phone Number aur is Password se login karke dashboard access karega.
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Event Title</label>

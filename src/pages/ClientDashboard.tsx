@@ -186,8 +186,12 @@ export function ClientDashboard() {
           fetchJson('/api/payments'),
           fetchJson('/api/blocked-dates')
         ]);
-        setBlockedDates(bDates || []);
-        const foundClient = clients.find((c: any) => c.email === user.email);
+        const uEmail = user.email?.toLowerCase();
+        const foundClient = clients.find((c: any) => 
+          (c.email && uEmail && c.email.toLowerCase() === uEmail) || 
+          c.id === user.id || 
+          (user.phone && c.phone && (c.phone === user.phone || c.phone.replace(/[^0-9]/g, '') === user.phone.replace(/[^0-9]/g, '')))
+        );
         if (foundClient) {
           setClientData(foundClient);
           setBookingEmail(user.email || '');
