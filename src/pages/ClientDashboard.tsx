@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { studioAudio } from '../utils/audioPlayer';
+import { formatDisplayDate } from '../utils/dateFormatter';
+import { ALL_PACKAGES } from '../data/packagesData';
 
 const MY_IMAGES = [
   "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2938&auto=format&fit=crop",
@@ -222,7 +224,7 @@ export function ClientDashboard() {
 
   // Combine user info with real client/event data if it exists
   const displayEventName = eventData?.eventName || clientData?.eventName || user?.eventName || 'Royal Wedding Collection';
-  const displayEventDate = eventData?.date || clientData?.eventDate || user?.eventDate || 'November 15, 2026';
+  const displayEventDate = formatDisplayDate(eventData?.date || clientData?.eventDate || user?.eventDate || '15-November-2026');
   const displayPackage = clientData?.package || user?.package || 'Rs. 90,000 Luxury Package';
   const hasBookedEvent = !!eventData;
   
@@ -434,7 +436,7 @@ export function ClientDashboard() {
       selectedEvents.forEach(ev => {
         const typeName = ev.type === 'Other' ? ev.customType : ev.type;
         const loc = ev.type === 'Barat' ? `${ev.startLocation} to ${ev.endLocation}` : ev.startLocation;
-        eventsText += `\n- *${typeName}*: ${ev.date} (${ev.startTime} - ${ev.endTime}) @ ${loc}`;
+        eventsText += `\n- *${typeName}*: ${formatDisplayDate(ev.date)} (${ev.startTime} - ${ev.endTime}) @ ${loc}`;
       });
 
       const waPackage = bookingPackage === 'Custom Quote' ? `Custom Quote (Budget: Rs. ${bookingBudget})` : bookingPackage;
@@ -679,7 +681,7 @@ export function ClientDashboard() {
                         </h2>
                         {evt.venue && (
                           <p className="text-white/50 text-xs flex items-center gap-1.5 mt-1">
-                            <MapPin className="w-3.5 h-3.5 text-[#f2a900]" /> {evt.venue} &bull; {evt.date}
+                            <MapPin className="w-3.5 h-3.5 text-[#f2a900]" /> {evt.venue} &bull; {formatDisplayDate(evt.date)}
                           </p>
                         )}
                       </div>
@@ -1347,10 +1349,20 @@ export function ClientDashboard() {
                       className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]/50 transition-colors"
                     >
                       <option value="" disabled>Choose a package...</option>
-                      <option value="Premium Wedding Cover">Premium Wedding Cover</option>
-                      <option value="Luxury Cinematic Package">Luxury Cinematic Package</option>
-                      <option value="Basic Event Shoot">Basic Event Shoot</option>
-                      <option value="Pre-Wedding / Engagement">Pre-Wedding / Engagement</option>
+                      <optgroup label="💍 Wedding Packages">
+                        {ALL_PACKAGES.filter(p => p.category === 'wedding').map(p => (
+                          <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                            {p.code} — {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="👰 Bridal Special Packages">
+                        {ALL_PACKAGES.filter(p => p.category === 'bridal').map(p => (
+                          <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                            {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
                       <option value="Custom Quote">Custom Quote / Other</option>
                     </select>
                   </div>

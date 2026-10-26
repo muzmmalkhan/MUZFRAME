@@ -44,6 +44,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { studioAudio } from '../utils/audioPlayer';
+import { formatDisplayDate, parseAnyDate } from '../utils/dateFormatter';
+import { ALL_PACKAGES } from '../data/packagesData';
 
 interface ClientRecord {
   id: string;
@@ -140,9 +142,10 @@ const INITIAL_SONGS: SongRecord[] = [
 // Helper for dynamic countdown timer calculation
 function calculateCountdown(dateString: string): string {
   try {
-    const targetDate = new Date(dateString).getTime();
+    const parsed = parseAnyDate(dateString);
+    if (!parsed) return 'Date TBD';
+    const targetDate = parsed.getTime();
     const now = new Date().getTime();
-    if (isNaN(targetDate)) return 'Date TBD';
     const diff = targetDate - now;
     if (diff <= 0) return 'Live / Completed';
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -202,8 +205,8 @@ export function AdminDashboard() {
     eventName: '', 
     eventType: 'Wedding' as const,
     eventDate: new Date().toISOString().split('T')[0],
-    package: 'Luxury 3-Day Cinematic Package', 
-    totalAmount: '90000',
+    package: 'PACKAGE 04 — Signature (Rs. 99,000/-)', 
+    totalAmount: '99000',
     paidAmount: '0'
   });
 
@@ -375,7 +378,10 @@ export function AdminDashboard() {
 
   const handleAddClientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClient.name || !newClient.email) return;
+    if (!newClient.name || !newClient.phone) {
+      alert("Please enter Client Full Name and Phone Number.");
+      return;
+    }
 
     const tot = parseInt(newClient.totalAmount) || 90000;
     const paid = parseInt(newClient.paidAmount) || 0;
@@ -385,8 +391,8 @@ export function AdminDashboard() {
     const created: ClientRecord = {
       id: `CLI-${Math.floor(100 + Math.random() * 900)}`,
       name: newClient.name,
-      email: newClient.email.trim(),
-      phone: newClient.phone || '0300-6103262',
+      email: '',
+      phone: newClient.phone.trim(),
       password: clientPassword,
       eventName: newClient.eventName || `${newClient.name}'s ${newClient.eventType}`,
       eventType: newClient.eventType,
@@ -437,7 +443,7 @@ export function AdminDashboard() {
         clientName: created.name,
         eventName: created.eventName,
         amount: paid,
-        date: new Date().toISOString().split('T')[0],
+        date: formatDisplayDate(new Date()),
         method: 'Bank Transfer',
         status: 'Received'
       };
@@ -450,7 +456,7 @@ export function AdminDashboard() {
     }
 
     setShowAddClient(false);
-    setNewClient({ name: '', email: '', phone: '', password: '', eventName: '', eventType: 'Wedding', eventDate: new Date().toISOString().split('T')[0], package: 'Luxury 3-Day Cinematic Package', totalAmount: '90000', paidAmount: '0' });
+    setNewClient({ name: '', email: '', phone: '', password: '', eventName: '', eventType: 'Wedding', eventDate: new Date().toISOString().split('T')[0], package: 'PACKAGE 04 — Signature (Rs. 99,000/-)', totalAmount: '99000', paidAmount: '0' });
     triggerToast(`Client ${created.name} registered successfully with password: ${clientPassword}`);
   };
 
@@ -479,7 +485,7 @@ export function AdminDashboard() {
       clientName: newPayment.clientName,
       eventName: newPayment.eventName,
       amount: amt,
-      date: new Date().toLocaleDateString('en-GB'),
+      date: formatDisplayDate(new Date()),
       method: newPayment.method,
       status: newPayment.status
     };
@@ -596,13 +602,13 @@ export function AdminDashboard() {
               <strong style="font-size: 12px; color: #666; text-transform: uppercase;">Billed To Client:</strong><br/>
               <strong style="font-size: 18px;">${client.name}</strong><br/>
               Phone: ${client.phone}<br/>
-              Email: ${client.email}
+              ${client.email ? `Email: ${client.email}<br/>` : ''}
             </div>
             <div class="box">
               <strong style="font-size: 12px; color: #666; text-transform: uppercase;">Event Reference:</strong><br/>
               <strong>${client.eventName}</strong><br/>
-              Event Date: ${client.eventDate}<br/>
-              Invoice Date: ${new Date().toLocaleDateString('en-GB')}
+              Event Date: ${formatDisplayDate(client.eventDate)}<br/>
+              Invoice Date: ${formatDisplayDate(new Date())}
             </div>
           </div>
 
@@ -926,7 +932,9 @@ export function AdminDashboard() {
                 ))}
 
                 {events.filter(e => e.status === 'Upcoming').slice(0, 3).map(ev => {
-                  const targetDate = new Date(ev.date).getTime();
+                  const parsed = parseAnyDate(ev.date);
+                  if (!parsed) return null;
+                  const targetDate = parsed.getTime();
                   const now = new Date().getTime();
                   const diff = targetDate - now;
                   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -966,7 +974,7 @@ export function AdminDashboard() {
                     <div className="absolute w-2 h-2 rounded-full bg-[#f2a900] -left-[5px] top-1.5" />
                     <p className="text-white text-sm font-medium">{act.clientName}</p>
                     <p className="text-white/60 text-xs mt-0.5">{act.description}</p>
-                    <p className="text-white/40 text-[10px] mt-1 uppercase tracking-widest">{new Date(act.timestamp).toLocaleDateString()}</p>
+                    <p className="text-white/40 text-[10px] mt-1 uppercase tracking-widest">{formatDisplayDate(act.timestamp)}</p>
                   </div>
                 ))}
                 {activities.length === 0 && <p className="text-white/40 text-xs italic">No recent activity detected.</p>}
@@ -1030,7 +1038,7 @@ export function AdminDashboard() {
                       </div>
 
                       <p className="text-white/50 text-xs">
-                        Requested on {new Date(q.timestamp).toLocaleDateString()} at {new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Requested on {formatDisplayDate(q.timestamp)} at {new Date(q.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
 
                       <div className="flex flex-wrap gap-2 pt-1">
@@ -1141,7 +1149,7 @@ export function AdminDashboard() {
                     <div>
                       <div className="text-white font-medium text-sm">{act.clientName} <span className="text-white/50 font-normal">performed</span> {act.type}</div>
                       <div className="text-white/70 text-xs mt-1">{act.description}</div>
-                      <div className="text-white/40 text-[10px] mt-2 uppercase tracking-wider">{new Date(act.timestamp).toLocaleString()}</div>
+                      <div className="text-white/40 text-[10px] mt-2 uppercase tracking-wider">{formatDisplayDate(act.timestamp)} at {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     </div>
                   </div>
                 ))}
@@ -1204,7 +1212,7 @@ export function AdminDashboard() {
                             <span className="text-[10px] font-mono bg-white/10 px-2 py-0.5 rounded text-white/60">{client.id}</span>
                           </div>
                           <div className="text-white/50 text-xs mt-0.5 flex items-center gap-1">
-                            {client.email} • {client.phone}
+                            {client.email ? `${client.email} • ` : ''}{client.phone}
                           </div>
                           <div className="text-white/60 text-[11px] mt-1 flex items-center gap-1.5 font-mono">
                             <span className="text-[#f2a900] flex items-center gap-1"><Key className="w-3 h-3" /> Password:</span>
@@ -1218,7 +1226,7 @@ export function AdminDashboard() {
                           <div className="font-medium text-white">{displayEventName}</div>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[#f2a900] text-xs flex items-center gap-1 font-mono">
-                              <Calendar className="w-3 h-3" /> {displayEventDate}
+                              <Calendar className="w-3 h-3" /> {formatDisplayDate(displayEventDate)}
                             </span>
                             <span className="bg-white/10 text-white/80 text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1">
                               <Clock className="w-2.5 h-2.5 text-[#f2a900]" /> {countdown}
@@ -1254,7 +1262,8 @@ export function AdminDashboard() {
                             <button
                               onClick={() => {
                                 const pass = client.password || 'client123';
-                                const creds = `MuzFrame Studio Client Portal Login\n\nLogin Link: ${window.location.origin}/login\nEmail / User: ${client.email}\nPhone: ${client.phone}\nPassword: ${pass}\n\nYou can log in and view your 4K Highlights, select wedding songs, and track shoot status!`;
+                                const loginId = client.phone || client.email || client.id;
+                                const creds = `MuzFrame Studio Client Portal Login\n\nLogin Link: ${window.location.origin}/login\nPhone Number / Login ID: ${loginId}\nPassword: ${pass}\n\nYou can log in and view your 4K Highlights, select wedding songs, and track shoot status!`;
                                 navigator.clipboard.writeText(creds);
                                 triggerToast(`Login credentials copied for ${client.name}!`);
                               }}
@@ -1342,7 +1351,7 @@ export function AdminDashboard() {
                     {blockedDates.map(bd => (
                       <div key={bd.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white/5 rounded-lg p-3 border border-white/10">
                         <div>
-                          <p className="text-white font-medium text-sm">{new Date(bd.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                          <p className="text-white font-medium text-sm">{formatDisplayDate(bd.date)}</p>
                           <p className="text-white/50 text-xs">{bd.reason}</p>
                         </div>
                         <button onClick={() => handleUnblockDate(bd.id)} className="text-white/40 hover:text-red-400 p-1.5 hover:bg-red-500/10 rounded-md transition-all self-start sm:self-auto">
@@ -1377,7 +1386,7 @@ export function AdminDashboard() {
                   <div className="bg-black/50 p-3 rounded-2xl border border-white/5 space-y-2 text-xs mb-4">
                     <div className="flex justify-between">
                       <span className="text-white/50">Schedule Date</span>
-                      <span className="text-[#f2a900] font-mono font-medium">{evt.date}</span>
+                      <span className="text-[#f2a900] font-mono font-medium">{formatDisplayDate(evt.date)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/50">Venue</span>
@@ -1485,7 +1494,7 @@ export function AdminDashboard() {
                       <td className="py-4 px-6 font-mono font-bold text-white">{p.id}</td>
                       <td className="py-4 px-6">
                         <div className="font-semibold text-white">{p.clientName}</div>
-                        <div className="text-white/50 text-xs mt-0.5">{p.eventName} • {p.date}</div>
+                        <div className="text-white/50 text-xs mt-0.5">{p.eventName} • {formatDisplayDate(p.date)}</div>
                       </td>
                       <td className="py-4 px-6 text-white/80">{p.method}</td>
                       <td className="py-4 px-6 font-mono font-bold text-[#f2a900]">Rs. {p.amount.toLocaleString()}</td>
@@ -1792,7 +1801,7 @@ export function AdminDashboard() {
                 <div key={n.id} className="p-5 rounded-2xl bg-black/50 border border-white/10 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[#f2a900] font-bold text-sm">{n.title}</span>
-                    <span className="text-white/40 text-xs font-mono">{n.date}</span>
+                    <span className="text-white/40 text-xs font-mono">{formatDisplayDate(n.date)}</span>
                   </div>
                   <p className="text-white/80 text-xs leading-relaxed">{n.message}</p>
                   <div className="pt-2 flex items-center justify-between text-[11px] text-white/50 border-t border-white/5">
@@ -1869,8 +1878,8 @@ export function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Email Address</label>
-                    <input type="email" required value={editingClient.email} onChange={(e) => setEditingClient({ ...editingClient, email: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
+                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Email Address (Optional)</label>
+                    <input type="email" value={editingClient.email || ''} onChange={(e) => setEditingClient({ ...editingClient, email: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
                   </div>
                   <div>
                     <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Phone Number</label>
@@ -1947,15 +1956,16 @@ export function AdminDashboard() {
                   <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Client Full Names</label>
                   <input type="text" placeholder="e.g. Bilal & Fatima" required value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Email Address</label>
-                    <input type="email" placeholder="client@domain.com" required value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
-                  </div>
-                  <div>
-                    <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Phone Number</label>
-                    <input type="text" placeholder="0300-1234567" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" />
-                  </div>
+                <div>
+                  <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Phone Number (Login ID)</label>
+                  <input 
+                    type="tel" 
+                    placeholder="e.g. 0300-1234567" 
+                    required 
+                    value={newClient.phone} 
+                    onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} 
+                    className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]" 
+                  />
                 </div>
 
                 {/* PASSWORD FIELD WITH AUTO-GENERATE & VISIBILITY TOGGLE */}
@@ -1995,7 +2005,7 @@ export function AdminDashboard() {
                   </div>
                   <p className="text-[11px] text-[#f2a900]/90 flex items-center gap-1 pt-0.5">
                     <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
-                    Client is Email ya Phone Number aur is Password se login karke dashboard access karega.
+                    Client is Phone Number aur is Password se login karke dashboard access karega.
                   </p>
                 </div>
 
@@ -2022,10 +2032,34 @@ export function AdminDashboard() {
                   </div>
                   <div>
                     <label className="block text-white/70 text-xs font-semibold uppercase tracking-wider mb-1.5">Package Selected</label>
-                    <select value={newClient.package} onChange={(e) => setNewClient({ ...newClient, package: e.target.value })} className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]">
-                      <option value="Luxury 3-Day Cinematic Package">Luxury 3-Day (Rs. 90,000)</option>
-                      <option value="Premium 2-Day Shoot">Premium 2-Day (Rs. 65,000)</option>
-                      <option value="Single Day Event Coverage">Single Day (Rs. 40,000)</option>
+                    <select 
+                      value={newClient.package} 
+                      onChange={(e) => {
+                        const selectedVal = e.target.value;
+                        const matched = ALL_PACKAGES.find(p => `${p.code} — ${p.name} (${p.price})` === selectedVal || `${p.name} (${p.price})` === selectedVal);
+                        setNewClient({ 
+                          ...newClient, 
+                          package: selectedVal,
+                          totalAmount: matched ? matched.priceNum.toString() : newClient.totalAmount
+                        });
+                      }} 
+                      className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#f2a900]"
+                    >
+                      <optgroup label="💍 Wedding Packages">
+                        {ALL_PACKAGES.filter(p => p.category === 'wedding').map(p => (
+                          <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                            {p.code} — {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="👰 Bridal Special Packages">
+                        {ALL_PACKAGES.filter(p => p.category === 'bridal').map(p => (
+                          <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                            {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <option value="Custom Quote / Other">Custom Quote / Other</option>
                     </select>
                   </div>
                 </div>

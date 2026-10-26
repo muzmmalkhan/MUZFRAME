@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send, CheckCircle, Calendar, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDisplayDate } from '../utils/dateFormatter';
+import { ALL_PACKAGES } from '../data/packagesData';
 
 export function Contact() {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
-    package: 'None selected',
+    package: searchParams.get('package') || 'None selected',
     budget: '',
     message: ''
   });
+
+  useEffect(() => {
+    const pkgFromQuery = searchParams.get('package');
+    if (pkgFromQuery) {
+      setFormData(prev => ({ ...prev, package: pkgFromQuery }));
+    }
+  }, [searchParams]);
   
   const [events, setEvents] = useState<{
     type: string;
@@ -123,7 +134,7 @@ export function Contact() {
           location: "Unknown",
           eventName: "Booking Inquiry",
           eventType: selectedEvents.map(ev => ev.type === 'Other' ? ev.customType : ev.type).join(', '),
-          eventDate: selectedEvents.map(ev => `${ev.date} ${ev.startTime}-${ev.endTime}`).join(', '),
+          eventDate: selectedEvents.map(ev => `${formatDisplayDate(ev.date)} ${ev.startTime}-${ev.endTime}`).join(', '),
           package: formData.package === 'Custom Quote' ? `Custom Quote (Budget: Rs. ${formData.budget})` : formData.package,
           status: 'pending',
           totalAmount: 0,
@@ -166,7 +177,7 @@ export function Contact() {
       selectedEvents.forEach(ev => {
         const typeName = ev.type === 'Other' ? ev.customType : ev.type;
         const loc = ev.type === 'Barat' ? `${ev.startLocation} to ${ev.endLocation}` : ev.startLocation;
-        eventsText += `\n- *${typeName}*: ${ev.date} (${ev.startTime} - ${ev.endTime}) @ ${loc}`;
+        eventsText += `\n- *${typeName}*: ${formatDisplayDate(ev.date)} (${ev.startTime} - ${ev.endTime}) @ ${loc}`;
       });
 
       const waPackage = formData.package === 'Custom Quote' ? `Custom Quote (Budget: Rs. ${formData.budget})` : formData.package;
@@ -427,9 +438,20 @@ export function Contact() {
                 className={`w-full bg-[#111] border ${errors.package ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 sm:py-4 text-white focus:outline-none focus:border-[#f2a900] transition-colors appearance-none [color-scheme:dark]`}
               >
                 <option value="None selected">Package select karein...</option>
-                <option value="Rs. 50,000 Package">Rs. 50,000 Package</option>
-                <option value="Rs. 60,000 Package">Rs. 60,000 Package (Sab Se Popular)</option>
-                <option value="Rs. 90,000 Package">Rs. 90,000 Package</option>
+                <optgroup label="💍 Wedding Packages">
+                  {ALL_PACKAGES.filter(p => p.category === 'wedding').map(p => (
+                    <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                      {p.code} — {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="👰 Bridal Special Packages">
+                  {ALL_PACKAGES.filter(p => p.category === 'bridal').map(p => (
+                    <option key={p.id} value={`${p.code} — ${p.name} (${p.price})`}>
+                      {p.name} ({p.price}) {p.badge ? `• ${p.badge}` : ''}
+                    </option>
+                  ))}
+                </optgroup>
                 <option value="Custom Quote">Custom Quote / Other Package</option>
               </select>
               {errors.package && <span className="text-red-500 text-xs mt-1 block">{errors.package}</span>}

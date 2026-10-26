@@ -416,17 +416,33 @@ async function startServer() {
 
   app.post("/api/clients", async (req, res) => {
     const { name, email, phone, password } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Client email is required." });
+    if (!name || (!email && !phone)) {
+      return res.status(400).json({ error: "Client name and phone number are required." });
     }
-    const existing = db.clients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      return res.status(400).json({ error: "A client with this email already exists." });
+
+    const cleanPhone = (phone || '').trim();
+    const cleanPhoneDigits = cleanPhone.replace(/[^0-9]/g, '');
+
+    if (email && email.trim()) {
+      const existing = db.clients.find(c => c.email && c.email.toLowerCase() === email.toLowerCase().trim());
+      if (existing) {
+        return res.status(400).json({ error: "A client with this email already exists." });
+      }
+    } else if (cleanPhoneDigits && cleanPhoneDigits.length >= 7) {
+      const existing = db.clients.find(c => {
+        const cDigits = (c.phone || '').replace(/[^0-9]/g, '');
+        return cDigits && (cDigits === cleanPhoneDigits || (cDigits.length >= 7 && (cDigits.endsWith(cleanPhoneDigits) || cleanPhoneDigits.endsWith(cDigits))));
+      });
+      if (existing) {
+        return res.status(400).json({ error: "A client with this phone number already exists." });
+      }
     }
 
     const clientPassword = password && password.trim().length >= 3 ? password.trim() : 'client123';
     const clientRecord = {
       ...req.body,
+      email: (email && email.trim()) ? email.trim() : '',
+      phone: cleanPhone,
       password: clientPassword
     };
 
@@ -434,11 +450,12 @@ async function startServer() {
     pushToSupabase('clients', clientRecord);
 
     // Create / Sync client login user in db.users
+    const userEmail = (email && email.trim()) ? email.toLowerCase().trim() : `${cleanPhoneDigits || clientRecord.id}@client.muzframe`;
     const userRecord = {
       id: clientRecord.id || `CLI-${Math.floor(100 + Math.random() * 900)}`,
       name: name || clientRecord.name,
-      email: email.toLowerCase().trim(),
-      phone: phone || clientRecord.phone || '',
+      email: userEmail,
+      phone: cleanPhone,
       password: clientPassword,
       role: 'client'
     };
