@@ -61,9 +61,12 @@ export function Contact() {
 
   useEffect(() => {
     fetch('/api/blocked-dates')
-      .then((r) => r.json())
-      .then((d) => setBlockedDates(d || []))
-      .catch(console.error);
+      .then((r) => {
+        if (!r.ok || !r.headers.get('content-type')?.includes('application/json')) return [];
+        return r.json();
+      })
+      .then((d) => setBlockedDates(Array.isArray(d) ? d : []))
+      .catch(() => {});
   }, []);
 
   const toggleEvent = (index: number) => {

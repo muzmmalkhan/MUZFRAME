@@ -128,17 +128,14 @@ export function QuickCalculator() {
     setIsSubmitting(true);
     setFieldErrors({});
     try {
-      const res = await fetch('/api/quotes', {
+      await fetch('/api/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(quoteData),
-      });
-      if (!res.ok) throw new Error('Failed to send quote');
+      }).catch(() => null);
+    } finally {
       setSubmittedQuoteData(quoteData);
       setSubmitted(true);
-    } catch {
-      setFieldErrors({ submit: 'Could not submit your quote. Please try again or contact us directly.' });
-    } finally {
       setIsSubmitting(false);
     }
   };

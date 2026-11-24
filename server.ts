@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import cors from "cors";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import "dotenv/config";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
@@ -195,10 +194,18 @@ const loadFromSupabase = async () => {
 // -----------------------------------------
 
 async function startServer() {
-  await loadFromSupabase();
-
   const app = express();
-  const PORT = 3000;
+  const portArgIdx = process.argv.indexOf("--port");
+  const cliPort = portArgIdx !== -1 ? Number(process.argv[portArgIdx + 1]) : NaN;
+  const PORT =
+    Number.isFinite(cliPort) && cliPort > 0
+      ? cliPort
+      : Number(process.env.PORT) || 3000;
+
+  // Sync Supabase in the background so the HTTP server binds PORT immediately on host startup
+  loadFromSupabase().catch((err) => {
+    console.error("Background Supabase sync error:", err);
+  });
 
   app.use(cors());
   app.use(express.json());
@@ -803,18 +810,28 @@ Here are the facts about MuzFrame Studio:
     }
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.argv[1]?.endsWith("server.cjs")) ||
+    Boolean(process.argv[1]?.endsWith("server.js"));
+
+  if (!isProduction) {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = fs.existsSync(path.join(process.cwd(), "dist", "index.html"))
+      ? path.join(process.cwd(), "dist")
+      : __dirname;
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    app.get("*", (req, res) => {
+      if (req.path.startsWith("/api/")) {
+        return res.status(404).json({ error: "API route not found" });
+      }
+      res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
