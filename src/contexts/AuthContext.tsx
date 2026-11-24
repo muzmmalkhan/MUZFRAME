@@ -105,8 +105,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ email: user.email, newPassword })
     });
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error || "Failed to update password");
+      let errMsg = "Failed to update password";
+      try {
+        const text = await response.text();
+        const data = JSON.parse(text);
+        if (data?.error) errMsg = data.error;
+      } catch {}
+      throw new Error(errMsg);
     }
   };
 

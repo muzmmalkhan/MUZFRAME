@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, googleProvider, signInWithPopup } from '../lib/firebase';
+import { parseJsonResponse } from '../lib/safeFetch';
 
 export function Login() {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ export function Login() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone, password, name, location: clientLocation })
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
         if (!response.ok) throw new Error(data.error || 'Registration failed');
         login(data.user);
       } else {
@@ -109,7 +110,7 @@ export function Login() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone, password })
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
         if (!response.ok) throw new Error(data.error || 'Invalid credentials');
         login(data.user);
       }
@@ -136,15 +137,17 @@ export function Login() {
           photoURL: firebaseUser.photoURL
         })
       });
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
       if (!response.ok) throw new Error(data.error || 'Google authentication failed');
       
       login(data.user);
     } catch (err: any) {
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         // User closed popup, do nothing
       } else if (
-        err.code === 'auth/unauthorized-domain' || 
+        err.code === 'auth/unauthorized-domain' ||
+        err.code === 'auth/popup-blocked' ||
+        err.code === 'auth/operation-not-supported-in-this-environment' ||
         err.message?.includes('unauthorized-domain') ||
         err.message?.includes('unauthorized domain') ||
         err.message?.includes('auth/configuration-not-found')
@@ -175,7 +178,7 @@ export function Login() {
           name: demoGoogleEmail.split('@')[0]
         })
       });
-      const data = await response.json();
+      const data = await parseJsonResponse(response);
       if (!response.ok) throw new Error(data.error || 'Google authentication failed');
       
       setShowDomainModal(false);

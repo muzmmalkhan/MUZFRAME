@@ -47,6 +47,7 @@ import { studioAudio } from '../utils/audioPlayer';
 import { formatDisplayDate, parseAnyDate } from '../utils/dateFormatter';
 import { ALL_PACKAGES } from '../data/packagesData';
 import { BrandLogo } from '../components/BrandLogo';
+import { parseJsonResponse } from '../lib/safeFetch';
 
 interface ClientRecord {
   id: string;
@@ -351,9 +352,9 @@ export function AdminDashboard() {
     });
     
     const [freshClients, freshEvents, freshPayments] = await Promise.all([
-      fetch('/api/clients').then(res => res.json()),
-      fetch('/api/events').then(res => res.json()),
-      fetch('/api/payments').then(res => res.json())
+      fetch('/api/clients').then(res => parseJsonResponse(res)).catch(() => clients),
+      fetch('/api/events').then(res => parseJsonResponse(res)).catch(() => events),
+      fetch('/api/payments').then(res => parseJsonResponse(res)).catch(() => payments)
     ]);
     setClients(freshClients);
     setEvents(freshEvents);
@@ -424,7 +425,7 @@ export function AdminDashboard() {
     });
     
     if (!clientRes.ok) {
-        const errorData = await clientRes.json();
+        const errorData = await parseJsonResponse(clientRes).catch(() => ({}));
         alert(errorData.error || "Failed to add client");
         return;
     }
@@ -465,9 +466,9 @@ export function AdminDashboard() {
     await fetch(`/api/clients/${id}`, { method: 'DELETE' });
     
     const [freshClients, freshEvents, freshPayments] = await Promise.all([
-      fetch('/api/clients').then(res => res.json()),
-      fetch('/api/events').then(res => res.json()),
-      fetch('/api/payments').then(res => res.json())
+      fetch('/api/clients').then(res => parseJsonResponse(res)).catch(() => clients),
+      fetch('/api/events').then(res => parseJsonResponse(res)).catch(() => events),
+      fetch('/api/payments').then(res => parseJsonResponse(res)).catch(() => payments)
     ]);
     setClients(freshClients);
     setEvents(freshEvents);
@@ -720,9 +721,9 @@ export function AdminDashboard() {
   };
 
   const filteredClients = clients.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.eventName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (c.eventName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredSongs = songs.filter(s => {
