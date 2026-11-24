@@ -46,6 +46,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { studioAudio } from '../utils/audioPlayer';
 import { formatDisplayDate, parseAnyDate } from '../utils/dateFormatter';
 import { ALL_PACKAGES } from '../data/packagesData';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface ClientRecord {
   id: string;
@@ -765,7 +766,7 @@ export function AdminDashboard() {
               <span className="bg-[#f2a900] text-black text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Executive Control Center</span>
               <span className="text-white/50 text-xs font-mono">Logged in as: {user?.email || 'muzammal.khan99@gmail.com'}</span>
             </div>
-            <div className="flex items-center gap-4"><img src="/logo.png" alt="Logo" className="h-12 w-auto object-contain" /><h1 className="font-serif text-3xl md:text-4xl font-medium text-white">Console</h1></div>
+            <div className="flex items-center gap-4"><BrandLogo size="sm" /><h1 className="font-serif text-3xl md:text-4xl font-medium text-white">Console</h1></div>
             <p className="text-white/60 text-sm mt-1">Full real-time administration of clients, timelines, finances, and song selections.</p>
           </div>
 

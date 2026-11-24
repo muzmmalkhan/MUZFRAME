@@ -1,4 +1,5 @@
-import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ScrollProgress } from '../components/ScrollProgress';
@@ -7,8 +8,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function RootLayout() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const target = document.getElementById(location.hash.slice(1));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [location.pathname, location.hash]);
 
   if (loading) {
     return (

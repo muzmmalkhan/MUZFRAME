@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { WhatsAppButton } from '../components/WhatsAppButton';
+import { BrandLogo } from '../components/BrandLogo';
+import { STUDIO_CONTACT } from '../config/studioContact';
 
 export function ComingSoon() {
   const calculateTimeLeft = () => {
@@ -34,11 +36,9 @@ export function ComingSoon() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <img 
-          src="/logo.png" 
-          alt="MuzFrame Studio" 
-          className="h-24 md:h-32 mx-auto mb-8 object-contain"
-        />
+        <div className="flex justify-center mb-8">
+          <BrandLogo size="lg" />
+        </div>
         <h1 className="text-4xl md:text-6xl font-serif text-[#f2a900] mb-4">
           Coming Soon
         </h1>
@@ -72,8 +72,8 @@ export function ComingSoon() {
 
         <div className="mt-8">
           <p className="text-sm text-gray-500">Tel:</p>
-          <a href="tel:+923006103262" className="text-[#f2a900] text-lg font-bold hover:underline">
-            +92 300 6103262
+          <a href={`tel:${STUDIO_CONTACT.officialPhoneTel}`} className="text-[#f2a900] text-lg font-bold hover:underline">
+            {STUDIO_CONTACT.officialPhoneDisplay}
           </a>
         </div>
       </motion.div>

@@ -6,21 +6,22 @@ import { useNavigate } from 'react-router-dom';
 import { studioAudio } from '../utils/audioPlayer';
 import { formatDisplayDate } from '../utils/dateFormatter';
 import { ALL_PACKAGES } from '../data/packagesData';
+import { PORTFOLIO_ASSETS } from '../data/portfolioData';
 
 const MY_IMAGES = [
-  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2938&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2940&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=2940&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2940&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2942&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2938&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2942&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1603513492128-ba7bc9b3e143?q=80&w=2699&auto=format&fit=crop"
+  PORTFOLIO_ASSETS.baratCelebrationImg,
+  PORTFOLIO_ASSETS.walimaPortraitImg,
+  PORTFOLIO_ASSETS.mehndiNightImg,
+  PORTFOLIO_ASSETS.bridalPortraitImg,
+  PORTFOLIO_ASSETS.preweddingGoldenImg,
+  PORTFOLIO_ASSETS.droneVenueImg,
+  PORTFOLIO_ASSETS.showreelCinemaImg,
+  PORTFOLIO_ASSETS.bridalMehndiDetailsImg,
 ];
 
 const VIDEOS = [
-  { id: '1', title: 'Cinematic Teaser Trailer (4K HD)', duration: '01:45', thumb: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop' },
-  { id: '2', title: 'Full Barat Ceremony Reel', duration: '12:30', thumb: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop' }
+  { id: '1', title: 'Cinematic Teaser Trailer (4K HD)', duration: '01:45', thumb: PORTFOLIO_ASSETS.showreelCinemaImg },
+  { id: '2', title: 'Full Barat Ceremony Reel', duration: '12:30', thumb: PORTFOLIO_ASSETS.baratCelebrationImg },
 ];
 
 export interface ClientSong {
@@ -495,13 +496,25 @@ export function ClientDashboard() {
   return (
     <div className="pt-24 pb-24 min-h-screen bg-black">
       {/* Cover Header */}
-      <div className="min-h-[250px] h-[44vh] w-full relative">
-        <img 
-          src={MY_IMAGES[0]} 
-          className="w-full h-full object-cover" 
-          alt="Event cover" 
+      <div className="min-h-[260px] h-[44vh] w-full relative overflow-hidden bg-[#101010]">
+        <img
+          src={MY_IMAGES[0]}
+          width={1376}
+          height={768}
+          loading="eager"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fallbackApplied) {
+              img.dataset.fallbackApplied = '1';
+              img.src = '/assets/aistudio/WhatsApp_Image_2026-10-25_at_12.57.21_PM_a2784729.jpeg';
+            }
+          }}
+          className="absolute inset-0 w-full h-full object-cover object-center block"
+          alt="Event cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/15 pointer-events-none" />
         <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-6 lg:left-12 right-4 sm:right-6 lg:right-12 flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
           <div>
             {/* Beautiful Welcome and Username */}
